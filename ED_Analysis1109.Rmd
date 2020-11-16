@@ -1,0 +1,108 @@
+---
+title: "EDA"
+author: "YingtongZhou"
+date: "11/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+```{r}
+test1 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/test1.csv", header=FALSE)
+test2 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/test2.csv", header=FALSE)
+join <- read.table("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/join.csv", quote="\"", comment.char="")
+test1$ed <- paste(formatC(test1$V2, width=3, flag="0"), formatC(test1$V1, width=2, flag="0"), sep="/")
+test2$ed <- paste(formatC(test2$V2, width=3, flag="0"), formatC(test2$V1, width=2, flag="0"), sep="/")
+names(join)[names(join) == "V1"] <- "ed"
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+Andrew <- test1 %>% 
+  filter(V3 == "Andrew M. Cuomo") %>% 
+  select(ed, V4)
+
+Andrew_result <- left_join(join, Andrew, by = 'ed')
+
+write.csv(Andrew_result,'Andrew_result.csv')
+```
+
+```{r}
+Cynthia <- test1 %>% 
+  filter(V3 == "Cynthia E. Nixon") %>% 
+  select(ed, V4)
+
+Cynthia_result <- left_join(join, Cynthia, by = 'ed')
+
+write.csv(Cynthia_result,'Cynthia_result.csv')
+```
+
+```{r}
+Scattered <- test1 %>% 
+  filter(V3 == "Scattered") %>% 
+  select(ed, V4)
+
+T3 <- rbind(Andrew, Cynthia, Scattered) %>% 
+  group_by(ed) %>% 
+  summarise(add3 = sum(V4))
+
+Total_result <- left_join(join, T3, by = 'ed')
+
+write.csv(Total_result,'Total_result.csv')
+```
+
+
+
+
+
+```{r}
+Sean <- test2 %>% 
+  filter(V3 == "Sean Patrick Maloney") %>% 
+  select(ed, V4)
+
+Sean_result <- left_join(join, Sean, by = 'ed')
+
+write.csv(Sean_result,'Sean_result.csv')
+```
+
+
+```{r}
+Letitia <- test2 %>% 
+  filter(V3 == "Letitia A. James") %>% 
+  select(ed, V4)
+
+Letitia_result <- left_join(join, Letitia, by = 'ed')
+
+write.csv(Letitia_result,'Letitia_result.csv')
+```
+
+```{r}
+Zephyr <- test2 %>% 
+  filter(V3 == "Zephyr Teachout") %>% 
+  select(ed, V4)
+
+Zephyr_result <- left_join(join, Zephyr, by = 'ed')
+
+write.csv(Zephyr_result,'Zephyr_result.csv')
+```
+
+```{r}
+Scattered2 <- test2 %>% 
+  filter(V3 == "Scattered") %>% 
+  select(ed, V4)
+Eve <- test2 %>% 
+  filter(V3 == "Leecia R. Eve") %>% 
+  select(ed, V4)
+T32 <- rbind(Sean, Letitia, Zephyr, Eve, Scattered2) %>% 
+  group_by(ed) %>% 
+  summarise(add3 = sum(V4))
+
+Total_result2 <- left_join(join, T32, by = 'ed')
+
+write.csv(Total_result2,'Total_result2.csv')
+```

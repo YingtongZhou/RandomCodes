@@ -1,0 +1,125 @@
+---
+title: "EDA"
+author: "YingtongZhou"
+date: "11/18/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+
+Load Data
+```{r}
+D33 <- read.table("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/D33.csv", quote="\"", comment.char="")
+names(D33)[names(D33) == "V1"] <- "ed"
+
+Kings <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/KingsED_nov20.xlsx", skip = 4)
+Kings <- na.omit(Kings)
+Kings$ed <- paste(substr(Kings$`ELECTION DIST`, 9, 11), substr(Kings$`ELECTION DIST`, 7, 8), sep="/")
+
+Qu <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/QueensED_nov20.xlsx", skip = 4)
+Qu <- na.omit(Qu)
+Qu$ed <- paste(substr(Qu$`ELECTION DIST`, 10, 12), substr(Qu$`ELECTION DIST`, 8, 9), sep="/")
+
+GE2016 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/GE2016.csv", stringsAsFactors = FALSE)
+GE2016$ed <- paste(formatC(GE2016$ED, width=3, flag="0"), formatC(GE2016$AD, width=2, flag="0"), sep="/")
+
+CE2017 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/CE2017.csv", stringsAsFactors = FALSE)
+CE2017$ed <- paste(formatC(CE2017$ED, width=3, flag="0"), formatC(CE2017$AD, width=2, flag="0"), sep="/")
+```
+
+```{r}
+library(dplyr)
+```
+
+
+2020 Registered Voters
+```{r}
+TotalK <- Kings %>% 
+  filter(STATUS == 'Total')
+
+TotalQ <- Qu %>% 
+  filter(STATUS == 'Total')
+
+Total <- rbind(TotalK, TotalQ)
+
+Part1 <- left_join(D33, Total, by = 'ed')
+P1 <- na.omit(Part1)
+write.csv(P1, 'RegVoter2020.csv')
+```
+
+
+2016 General Election
+```{r}
+Dem <- GE2016 %>% 
+  filter(grepl('Democratic', Unit.Name))
+Dem <- left_join(D33, Dem, by = 'ed')
+Dem <- na.omit(Dem)
+
+Rep <- GE2016 %>% 
+  filter(grepl('Republican', Unit.Name))
+Rep <- left_join(D33, Rep, by = 'ed')
+Rep <- na.omit(Rep)
+
+Green <- GE2016 %>% 
+  filter(grepl('Green', Unit.Name))
+Green <- left_join(D33, Green, by = 'ed')
+Green <- na.omit(Green)
+
+wf <- GE2016 %>% 
+  filter(grepl('Working Families', Unit.Name))
+wf <- left_join(D33, wf, by = 'ed')
+wf <- na.omit(wf)
+
+con <- GE2016 %>% 
+  filter(grepl('Conservative', Unit.Name))
+con <- left_join(D33, con, by = 'ed')
+con <- na.omit(con)
+
+lbt <- GE2016 %>% 
+  filter(grepl('Libertarian', Unit.Name))
+lbt <- left_join(D33, lbt, by = 'ed')
+lbt <- na.omit(lbt)
+
+we <- GE2016 %>% 
+  filter(grepl("Women's Equality", Unit.Name))
+we <- left_join(D33, we, by = 'ed')
+we <- na.omit(we)
+```
+
+
+2017 Council Election
+```{r}
+Dem2 <- CE2017 %>% 
+  filter(grepl('Democratic', Unit.Name))
+Dem2 <- left_join(D33, Dem2, by = 'ed')
+Dem2 <- na.omit(Dem2)
+```
+
+
+
+
+# District 18 ED Analysis
+Compared with Map, 074/85 and 075/85 not in district 18 now
+```{r}
+D18 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/D18.csv")
+D18$ed <- paste(formatC(D18$ED, width=3, flag="0"), formatC(D18$AD, width=2, flag="0"), sep="/")
+dis18 <- D18 %>% 
+  distinct(ed) %>% 
+  filter(ed != "074/85", ed != "075/85")
+```
+
+
+```{r}
+library(readxl)
+PollSite <- read_excel("Desktop/QMSS - CU/JobHunting/ElevationStrategies/GE2019_ElectionDay_PollSiteList_BX.XLSX")
+PollSite$ed <- paste(formatC(PollSite$ED, width=3, flag="0"), formatC(PollSite$AD, width=2, flag="0"), sep="/")
+PSD18 <- left_join(dis18, PollSite, by = 'ed') %>% 
+  select(`Site Name`)
+  # select(`Site Name`,`Site Address`) %>% 
+  # distinct()
+addad <- left_join(PSD18name, PollSite$`Site Address`)
+```
+

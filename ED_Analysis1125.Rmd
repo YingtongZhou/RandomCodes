@@ -1,0 +1,206 @@
+---
+title: "ED_Analysis1123"
+author: "YingtongZhou"
+date: "11/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+```
+
+
+Load Data
+```{r}
+D51 <- read.table("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/D51.txt", quote="\"", comment.char="", stringsAsFactors=FALSE)
+names(D51)[names(D51) == "V1"] <- "ed"
+D51$ed <- paste(formatC(as.integer(sub("/.*", "", D51$ed)), width=3, flag="0"),
+                str_sub(D51$ed,-2,-1), sep = "/")
+
+C2014 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/C2014.csv", stringsAsFactors = FALSE)
+C2014$ed <- paste(formatC(C2014$ED, width=3, flag="0"), formatC(C2014$AD, width=2, flag="0"), sep="/")
+
+C2014r <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/R2014PE.csv", stringsAsFactors = FALSE)
+C2014r$ed <- paste(formatC(C2014r$ED, width=3, flag="0"), formatC(C2014r$AD, width=2, flag="0"), sep="/")
+
+comp14 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/comp2014.csv", stringsAsFactors = FALSE)
+comp14$ed <- paste(formatC(comp14$ED, width=3, flag="0"), formatC(comp14$AD, width=2, flag="0"), sep="/")
+
+comp18 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/2018comp.csv", stringsAsFactors = FALSE)
+comp18$ed <- paste(formatC(comp18$X1, width=3, flag="0"), formatC(comp18$X61, width=2, flag="0"), sep="/")
+```
+
+
+2014 General Election Andrew M. Cuomo
+```{r}
+ac2014 <- C2014 %>%
+  filter(grepl('Andrew M. Cuomo', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(D51, ac2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "AC"
+
+# Rob Astorino
+ra2014 <- C2014 %>%
+  filter(grepl('Rob Astorino', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, ra2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "RA"
+
+# Howie Hawkins
+hh2014 <- C2014 %>%
+  filter(grepl('Howie Hawkins', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, hh2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "HH"
+
+# Steven Cohn
+sc2014 <- C2014 %>%
+  filter(grepl('Steven Cohn', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, sc2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "SC"
+
+# Michael McDermott
+mm2014 <- C2014 %>%
+  filter(grepl('Michael McDermott', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, mm2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "MM"
+
+write.csv(acjoin,'2014Cuomo.csv')
+```
+
+
+2014 Primary Eletction Andrew M. Cuomo ---- Richmond!!
+```{r}
+ac2014 <- C2014r %>%
+  filter(grepl('Andrew M. Cuomo', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(D51, ac2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "AC"
+
+# Zephyr R. Teachout
+zt2014 <- C2014r %>%
+  filter(grepl('Zephyr R. Teachout', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, zt2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "ZT"
+
+# Randy A. Credico
+rc2014 <- C2014r %>%
+  filter(grepl('Randy A. Credico', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, rc2014, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "RC"
+
+write.csv(acjoin,'2014CuomoPE.csv')
+```
+
+
+2014 Comptroller
+```{r}
+# Thomas P. DiNapoli
+td <- comp14 %>%
+  filter(grepl('Thomas P. DiNapoli', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(D51, td, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "TD"
+
+# Robert Antonacci
+ra <- comp14 %>%
+  filter(grepl('Robert Antonacci', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, ra, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "RA"
+
+# Theresa M. Portelli 
+tp <- comp14 %>%
+  filter(grepl('Theresa M. Portelli ', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, tp, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "TP"
+
+# John Clifton
+jc <- comp14 %>%
+  filter(grepl('John Clifton ', Unit.Name)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(Tally))
+
+acjoin <- left_join(acjoin, jc, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "jc"
+
+write.csv(acjoin,'2014compGE.csv')
+```
+
+
+2018 Comptroller
+```{r}
+# Thomas P. DiNapoli
+td <- comp18 %>%
+  filter(grepl('Thomas P. DiNapoli', Public.Counter)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(X558))
+
+acjoin <- left_join(D51, td, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "TD"
+
+# Jonathan Trichter
+jt <- comp18 %>%
+  filter(grepl('Jonathan Trichter', Public.Counter)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(X558))
+
+acjoin <- left_join(acjoin, jt, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "JT"
+
+# Mark Dunlea
+md <- comp18 %>%
+  filter(grepl('Mark Dunlea', Public.Counter)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(X558))
+
+acjoin <- left_join(acjoin, md, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "MD"
+
+# Cruger E. Gallaudet
+cg <- comp18 %>%
+  filter(grepl('Cruger E. Gallaudet', Public.Counter)) %>%
+  group_by(ed) %>%
+  summarise(mct = sum(X558))
+
+acjoin <- left_join(acjoin, cg, by = 'ed')
+names(acjoin)[names(acjoin) == "mct"] <- "CG"
+
+write.csv(acjoin,'2018compGE.csv')
+```
+
+
+

@@ -1,0 +1,87 @@
+---
+title: "ED_Analysis1123"
+author: "YingtongZhou"
+date: "11/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+```
+
+
+Load Data
+```{r}
+D51 <- read.table("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/D51.csv", quote="\"", comment.char="")
+names(D51)[names(D51) == "V1"] <- "ed"
+D51$ed <- paste(formatC(as.integer(sub("/.*", "", D51$ed)), width=3, flag="0"), 
+                str_sub(D51$ed,-2,-1), sep = "/")
+# D51$test <- strsplit(D51$ed, "/")
+
+
+AD6316 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/16AD63.csv", stringsAsFactors = FALSE)
+AD6316$ed <- paste(formatC(AD6316$ED, width=3, flag="0"), formatC(AD6316$AD, width=2, flag="0"), sep="/")
+
+AD6218 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/AD62.csv", stringsAsFactors = FALSE)
+AD6218$ed <- paste(formatC(AD6218$X1, width=3, flag="0"), formatC(AD6218$X62, width=2, flag="0"), sep="/")
+
+AD6318 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/AD63.csv", stringsAsFactors = FALSE)
+AD6318$ed <- paste(formatC(AD6318$X1, width=3, flag="0"), formatC(AD6318$X63, width=2, flag="0"), sep="/")
+```
+
+
+2016 AD63
+```{r}
+# mc <- AD6316 %>% 
+#   filter(grepl('Michael J. Cusick', Unit.Name)) %>% 
+#   group_by(ed) %>% 
+#   summarise(mct = sum(Tally))
+# mcjoin <- left_join(D51, mc, by = 'ed')
+# write.csv(mcjoin,'mcjoin.csv')
+```
+
+
+2018 AD62
+```{r}
+# Michael W. Reilly Jr. 
+mr <- AD6218 %>% 
+  filter(grepl('Michael W. Reilly Jr.', Public.Counter)) %>% 
+  group_by(ed) %>% 
+  summarise(mct = sum(X460))
+mrjoin <- left_join(D51, mr, by = 'ed')
+write.csv(mrjoin,'mrjoin.csv')
+
+# Glenn A. Yost
+gy <- AD6218 %>% 
+  filter(grepl('Glenn A. Yost', Public.Counter)) %>% 
+  group_by(ed) %>% 
+  summarise(mct = sum(X460))
+gyjoin <- left_join(D51, gy, by = 'ed')
+write.csv(gyjoin,'gyjoin.csv')
+```
+
+
+2018 AD63
+```{r}
+# Michael J. Cusick
+mc18 <- AD6318 %>% 
+  filter(grepl('Michael J. Cusick', Public.Counter)) %>% 
+  group_by(ed) %>% 
+  summarise(mct = sum(X474))
+mcjoin18 <- left_join(D51, mc18, by = 'ed')
+write.csv(mcjoin18,'mcjoin18.csv')
+
+# John Dennie
+jd <- AD6318 %>% 
+  filter(grepl('John Dennie', Public.Counter)) %>% 
+  group_by(ed) %>% 
+  summarise(mct = sum(X474))
+jdjoin <- left_join(D51, jd, by = 'ed')
+write.csv(jdjoin,'jdjoin.csv')
+```

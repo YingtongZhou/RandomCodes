@@ -1,0 +1,240 @@
+---
+title: "ED_Analysis1123"
+author: "YingtongZhou"
+date: "11/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load Data
+```{r}
+AleD <- read.table("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/AleD.txt", quote="\"", comment.char="")
+names(AleD)[names(AleD) == "V1"] <- "ed"
+AleD$ed <- paste(formatC(as.integer(sub("/.*", "", AleD$ed)), width=3, flag="0"),
+                str_sub(AleD$ed,-2,-1), sep = "/")
+
+FelD <- read.table("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/FelD.txt", quote="\"", comment.char="")
+names(FelD)[names(FelD) == "V1"] <- "ed"
+FelD$ed <- paste(formatC(as.integer(sub("/.*", "", FelD$ed)), width=3, flag="0"),
+                str_sub(FelD$ed,-2,-1), sep = "/")
+
+GE2016 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/GE2016.csv", stringsAsFactors = FALSE)
+GE2016$ed <- paste(formatC(GE2016$ED, width=3, flag="0"), formatC(GE2016$AD, width=2, flag="0"), sep="/")
+GE2016$Tally <- as.numeric(GE2016$Tally)
+
+ccd38 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/17ccd38.csv", stringsAsFactors = FALSE)
+ccd38$ed <- paste(formatC(ccd38$ED, width=3, flag="0"), formatC(ccd38$AD, width=2, flag="0"), sep="/")
+
+ccd32 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/17ccd32.csv", stringsAsFactors = FALSE)
+ccd32$ed <- paste(formatC(ccd32$ED, width=3, flag="0"), formatC(ccd32$AD, width=2, flag="0"), sep="/")
+
+Kings <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/KingsED_nov20.xlsx", skip = 4)
+Kings <- na.omit(Kings)
+Kings$ed <- paste(substr(Kings$`ELECTION DIST`, 9, 11), substr(Kings$`ELECTION DIST`, 7, 8), sep="/")
+
+Qu <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/QueensED_nov20.xlsx", skip = 4)
+Qu <- na.omit(Qu)
+Qu$ed <- paste(substr(Qu$`ELECTION DIST`, 10, 12), substr(Qu$`ELECTION DIST`, 8, 9), sep="/")
+```
+
+
+2016 General Election Presidential - Alexa
+```{r}
+# Hillary Clinton
+hc <- GE2016 %>% 
+  filter(grepl('Hillary Clinton', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(hrc = sum(Tally))
+pre16 <- left_join(AleD, hc, by = 'ed')
+
+# Donald J. Trump
+dt <- GE2016 %>% 
+  filter(grepl('Donald J. Trump', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(dtc = sum(Tally))
+pre16 <- left_join(pre16, dt, by = 'ed')
+
+write.csv(pre16,'pre16Ale.csv')
+```
+
+
+2016 General Election Presidential - Felicia
+```{r}
+pre16f <- left_join(FelD, hc, by = 'ed')
+pre16f <- left_join(pre16f, dt, by = 'ed')
+write.csv(pre16f,'pre16Fel.csv')
+```
+
+
+2017 City Council - Alexa
+```{r}
+# Carlos Menchaca
+cm <- ccd38 %>% 
+  filter(grepl('Carlos Menchaca', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(cmc = sum(Tally))
+ccdA <- left_join(AleD, cm, by = 'ed')
+
+# Allan E. Romaguera
+ar <- ccd38 %>% 
+  filter(grepl('Allan E. Romaguera', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(arc = sum(Tally))
+ccdA <- left_join(ccdA, ar, by = 'ed')
+
+# Carmen V. Hulbert
+ch <- ccd38 %>% 
+  filter(grepl('Carmen V. Hulbert', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(chc = sum(Tally))
+ccdA <- left_join(ccdA, ch, by = 'ed')
+
+# Delvis Valdes
+dv <- ccd38 %>% 
+  filter(grepl('Delvis Valdes', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(dvc = sum(Tally))
+ccdA <- left_join(ccdA, dv, by = 'ed')
+
+write.csv(ccdA,'ccdA.csv')
+```
+
+
+2017 City Council - Felicia
+```{r}
+# Michael G. Scala 
+ms <- ccd32 %>% 
+  filter(grepl('Michael G. Scala ', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(msc = sum(Tally))
+ccdF <- left_join(FelD, ms, by = 'ed')
+
+# Eric A. Ulrich
+eu <- ccd32 %>% 
+  filter(grepl('Eric A. Ulrich', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(euc = sum(Tally))
+ccdF <- left_join(ccdF, eu, by = 'ed')
+
+write.csv(ccdF,'ccdF.csv')
+```
+
+
+2020 Registered Voters - Alexa D38
+```{r}
+TotalK <- Kings %>% 
+  filter(STATUS == 'Total')
+
+TotalQ <- Qu %>% 
+  filter(STATUS == 'Total')
+
+Total <- rbind(TotalK, TotalQ)
+
+RV38 <- left_join(AleD, Total, by = 'ed')
+write.csv(RV38, 'RV38.csv')
+```
+
+
+2020 Registered Voters - Felicia D32
+```{r}
+RV32 <- left_join(FelD, Total, by = 'ed')
+write.csv(RV32, 'RV32.csv')
+```
+
+
+Add ccd7 ED/AD
+```{r}
+ccd7 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/17ccd7.csv", stringsAsFactors = FALSE)
+ccd7$ed <- paste(formatC(ccd7$ED, width=3, flag="0"), formatC(ccd7$AD, width=2, flag="0"), sep="/")
+
+uccd7 <- ccd7 %>% 
+  distinct(ed)
+write.csv(uccd7, 'uccd7.csv')
+```
+
+
+Add Poll Site ccd7
+```{r}
+ps7 <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ps7.XLSX")
+ps7$ed <- paste(formatC(ps7$ED, width=3, flag="0"), formatC(ps7$AD, width=2, flag="0"), sep="/")
+psccd7 <- left_join(uccd7, ps7, by = 'ed')
+write.csv(psccd7, 'psccd7.csv')
+```
+
+
+2016 General Election Presidential - ccd7
+```{r}
+pre16d7 <- left_join(uccd7, hc, by = 'ed')
+pre16d7 <- left_join(pre16d7, dt, by = 'ed')
+write.csv(pre16d7,'pre16d7.csv')
+```
+
+
+2017 City Council ccd7
+```{r}
+# Mark D. Levine
+ml <- ccd7 %>% 
+  filter(grepl('Mark D. Levine', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(mlc = sum(Tally))
+ccdS <- left_join(uccd7, ml, by = 'ed')
+
+# Florindo J. Troncelliti
+ft <- ccd7 %>% 
+  filter(grepl('Florindo J. Troncelliti', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(ftc = sum(Tally))
+ccdS <- left_join(ccdS, ft, by = 'ed')
+
+write.csv(ccdS,'ccdS.csv')
+```
+
+
+2020 Registered Voters - Stacy D7
+```{r}
+ny <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/nyrv.xlsx")
+ny <- na.omit(ny)
+ny$ed <- paste(substr(ny$`ELECTION DIST`, 12, 14), substr(ny$`ELECTION DIST`, 10, 11), sep="/")
+nyt <- ny %>% 
+  filter(STATUS == 'Total')
+RV7 <- left_join(uccd7, ny, by = 'ed')
+write.csv(RV7, 'RV7.csv')
+```
+
+
+Added Neighborhoods - Remove Duplicate Rows
+```{r}
+psccd7 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/psccd7.csv", stringsAsFactors = FALSE)
+pst <- psccd7 %>% 
+  select(Neighborhood, Site.Name, Site.Address) %>% 
+  distinct()
+write.csv(pst, 'pst.csv')
+```
+
+
+2020 Democratic Presidential - Eric Adam
+```{r}
+dp20 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/DP2020.csv", stringsAsFactors = FALSE)
+dp20$ed <- paste(formatC(dp20$X1, width=3, flag="0"), formatC(dp20$X65, width=2, flag="0"), sep="/")
+
+alleds <- dp20 %>% 
+  distinct(ed)
+
+ex <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ex.xlsx", col_names = TRUE)
+ex7 <- psccd7 %>% 
+  select(ed, Neighborhood, Site.Name)
+eaed <- left_join(alleds, rbind(ex, ex7), by = "ed")
+write.csv(eaed, 'AllEDs.csv')
+```
+

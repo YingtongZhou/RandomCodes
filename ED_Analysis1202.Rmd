@@ -1,0 +1,207 @@
+---
+title: "ED_Analysis1202"
+author: "YingtongZhou"
+date: "12/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load Data
+```{r}
+nbhd <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/nbhd.txt", stringsAsFactors = FALSE)
+nbhd$ed <- paste(formatC(as.integer(sub("/.*", "", nbhd$ed)), width=3, flag="0"),
+                 str_sub(nbhd$ed,-2,-1), sep = "/")
+ed1202 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ed1202.txt", stringsAsFactors = FALSE)
+ed1202$ed <- paste(formatC(as.integer(sub("/.*", "", ed1202$ed)), width=3, flag="0"),
+                 str_sub(ed1202$ed,-2,-1), sep = "/")
+ 
+# GE2016 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/GE2016.csv", stringsAsFactors = FALSE)
+# GE2016$ed <- paste(formatC(GE2016$ED, width=3, flag="0"), formatC(GE2016$AD, width=2, flag="0"), sep="/")
+# GE2016$Tally <- as.numeric(GE2016$Tally)
+ 
+# Kings <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/KingsED_nov20.xlsx", skip = 4)
+# Kings <- na.omit(Kings)
+# Kings$ed <- paste(substr(Kings$`ELECTION DIST`, 9, 11), substr(Kings$`ELECTION DIST`, 7, 8), sep="/")
+
+```
+
+
+Join Finished Neighborhoods (contains duplicates; manually removed some, new version called fnbhd_corrected)
+```{r}
+fnbhd <- left_join(ed1202, nbhd, by = 'ed')
+# fnbhd <- na.omit(fnbhd)
+write.csv(fnbhd,'fnbhd.csv')
+```
+
+
+Random chekcing duplicate ED/AD
+```{r}
+duphb <- duplicated(nbhd)
+nbhd$ed[duplicated(nbhd$ed)]
+```
+
+```{r}
+test12 <- nbhd %>% 
+  filter(ed %in% nbhd$ed[duplicated(nbhd$ed)]) %>% 
+  distinct() %>% 
+  group_by(ed)
+write.csv(test12,'test12.csv')
+
+test1234 <- nbhd %>% 
+  distinct()
+
+testa <- test1234 %>% 
+  filter(ed %in% test1234$ed[duplicated((test1234$ed))]) %>% 
+  distinct() %>% 
+  filter(ed == "055/64")
+
+test100 <- left_join(ed1202, test1234, by = "ed")
+```
+
+
+
+
+
+2020 Presidential - Load Data
+```{r}
+pre20 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/pre20.csv", header=FALSE, stringsAsFactors=FALSE)
+pre20$ed <- paste(formatC(pre20$V2, width=3, flag="0"), formatC(pre20$V1, width=2, flag="0"), sep="/")
+pre20$V4 <- as.numeric(pre20$V4)
+```
+
+
+2020 Presidential - Eric Adam
+```{r}
+# Joseph R. Biden
+jb <- pre20 %>% 
+  filter(grepl('Joseph R. Biden', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(jbc = sum(V4))
+pre20ea <- left_join(ed1202, jb, by = 'ed')
+
+# Donald J. Trump
+dt <- pre20 %>% 
+  filter(grepl('Donald J. Trump', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(dtc = sum(V4))
+pre20ea <- left_join(pre20ea, dt, by = 'ed')
+
+write.csv(pre20ea,'pre20ea.csv')
+```
+
+
+2020 Presidential - Alexa ccd38
+```{r}
+ccd38 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd38.txt", stringsAsFactors = FALSE)
+ccd38$ed <- paste(formatC(as.integer(sub("/.*", "", ccd38$ed)), width=3, flag="0"),
+                 str_sub(ccd38$ed,-2,-1), sep = "/")
+pre2038 <- left_join(ccd38, jb, by = 'ed')
+pre2038 <- left_join(pre2038, dt, by = 'ed')
+write.csv(pre2038,'pre2038.csv')
+```
+
+
+2020 Presidential - Felicia ccd32
+```{r}
+ccd32 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd32.txt", stringsAsFactors = FALSE)
+ccd32$ed <- paste(formatC(as.integer(sub("/.*", "", ccd32$ed)), width=3, flag="0"),
+                 str_sub(ccd32$ed,-2,-1), sep = "/")
+pre2032 <- left_join(ccd32, jb, by = 'ed')
+pre2032 <- left_join(pre2032, dt, by = 'ed')
+write.csv(pre2032,'pre2032.csv')
+```
+
+
+2020 Presidential - Stacy ccd7
+```{r}
+ccd7 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd7.txt", stringsAsFactors = FALSE)
+pre207 <- left_join(ccd7, jb, by = 'ed')
+pre207 <- left_join(pre207, dt, by = 'ed')
+write.csv(pre207,'pre207.csv')
+```
+
+
+2020 Presidential - Brian C ccd40
+```{r}
+ccd40 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd40.txt", stringsAsFactors = FALSE)
+ccd40$ed <- paste(formatC(as.integer(sub("/.*", "", ccd40$ed)), width=3, flag="0"),
+                 str_sub(ccd40$ed,-2,-1), sep = "/")
+pre2040 <- left_join(ccd40, jb, by = 'ed')
+pre2040 <- left_join(pre2040, dt, by = 'ed')
+write.csv(pre2040,'pre2040.csv')
+```
+
+
+2020 Presidential - Amoy Barnes ccd49
+```{r}
+ccd49 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd49.txt", stringsAsFactors = FALSE)
+ccd49$ed <- paste(formatC(as.integer(sub("/.*", "", ccd49$ed)), width=3, flag="0"),
+                 str_sub(ccd49$ed,-2,-1), sep = "/")
+pre2049 <- left_join(ccd49, jb, by = 'ed')
+pre2049 <- left_join(pre2049, dt, by = 'ed')
+write.csv(pre2049,'pre2049.csv')
+```
+
+
+2020 Presidential - Monique C ccd31
+```{r}
+ccd31 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd31.txt", stringsAsFactors = FALSE)
+pre2031 <- left_join(ccd31, jb, by = 'ed')
+pre2031 <- left_join(pre2031, dt, by = 'ed')
+write.csv(pre2031,'pre2031.csv')
+```
+
+
+2020 Presidential - Olivia D ccd51
+```{r}
+ccd51 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd51.txt", stringsAsFactors = FALSE)
+ccd51$ed <- paste(formatC(as.integer(sub("/.*", "", ccd51$ed)), width=3, flag="0"),
+                 str_sub(ccd51$ed,-2,-1), sep = "/")
+pre2051 <- left_join(ccd51, jb, by = 'ed')
+pre2051 <- left_join(pre2051, dt, by = 'ed')
+write.csv(pre2051,'pre2051.csv')
+```
+
+
+2020 Presidential - Nantasha W ccd27
+```{r}
+ccd27 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd27.txt", stringsAsFactors = FALSE)
+ccd27$ed <- paste(formatC(as.integer(sub("/.*", "", ccd27$ed)), width=3, flag="0"),
+                 str_sub(ccd27$ed,-2,-1), sep = "/")
+pre2027 <- left_join(ccd27, jb, by = 'ed')
+pre2027 <- left_join(pre2027, dt, by = 'ed')
+write.csv(pre2027,'pre2027.csv')
+```
+
+
+2020 Presidential - Evie H ccd22
+```{r}
+ccd22 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd22.txt", stringsAsFactors = FALSE)
+ccd22$ed <- paste(formatC(as.integer(sub("/.*", "", ccd22$ed)), width=3, flag="0"),
+                 str_sub(ccd22$ed,-2,-1), sep = "/")
+pre2022 <- left_join(ccd22, jb, by = 'ed')
+pre2022 <- left_join(pre2022, dt, by = 'ed')
+write.csv(pre2022,'pre2022.csv')
+```
+
+
+2020 Presidential - Sheba S ccd9
+```{r}
+ccd9 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd9.txt", stringsAsFactors = FALSE)
+ccd9$ed <- paste(formatC(as.integer(sub("/.*", "", ccd9$ed)), width=3, flag="0"),
+                 str_sub(ccd9$ed,-2,-1), sep = "/")
+pre209 <- left_join(ccd9, jb, by = 'ed')
+pre209 <- left_join(pre209, dt, by = 'ed')
+write.csv(pre209,'pre209.csv')
+```

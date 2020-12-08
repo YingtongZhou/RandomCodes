@@ -1,0 +1,336 @@
+---
+title: "ED_Analysis1202"
+author: "YingtongZhou"
+date: "12/07/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load Data
+```{r}
+ccd31 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd31.txt", stringsAsFactors = FALSE)
+ccd31$ed <- paste(formatC(as.integer(sub("/.*", "", ccd31$ed)), width=3, flag="0"),
+                 str_sub(ccd31$ed, -2,-1), sep = "/")
+as2023 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2023.csv", header=FALSE, stringsAsFactors=FALSE)
+as2023$ed <- paste(formatC(as2023$V2, width=3, flag="0"), formatC(as2023$V1, width=2, flag="0"), sep="/")
+ 
+as2029 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2029.csv", header=FALSE, stringsAsFactors=FALSE)
+as2029$ed <- paste(formatC(as2029$V2, width=3, flag="0"), formatC(as2029$V1, width=2, flag="0"), sep="/")
+
+as2031 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2031.csv", header=FALSE, stringsAsFactors=FALSE)
+as2031$ed <- paste(formatC(as2031$V2, width=3, flag="0"), formatC(as2031$V1, width=2, flag="0"), sep="/")
+
+as2032 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2032.csv", header=FALSE, stringsAsFactors=FALSE)
+as2032$ed <- paste(formatC(as2032$V2, width=3, flag="0"), formatC(as2032$V1, width=2, flag="0"), sep="/")
+ 
+# GE2016 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/GE2016.csv", stringsAsFactors = FALSE)
+# GE2016$ed <- paste(formatC(GE2016$ED, width=3, flag="0"), formatC(GE2016$AD, width=2, flag="0"), sep="/")
+# GE2016$Tally <- as.numeric(GE2016$Tally)
+ 
+# Kings <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/KingsED_nov20.xlsx", skip = 4)
+# Kings <- na.omit(Kings)
+# Kings$ed <- paste(substr(Kings$`ELECTION DIST`, 9, 11), substr(Kings$`ELECTION DIST`, 7, 8), sep="/")
+```
+
+
+
+2020 Assembly - ccd31
+
+Load Data
+```{r}
+ccd31 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd31.txt", stringsAsFactors = FALSE)
+ccd31$ed <- paste(formatC(as.integer(sub("/.*", "", ccd31$ed)), width=3, flag="0"),
+                 str_sub(ccd31$ed, -2,-1), sep = "/")
+as2023 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2023.csv", header=FALSE, stringsAsFactors=FALSE)
+as2023$ed <- paste(formatC(as2023$V2, width=3, flag="0"), formatC(as2023$V1, width=2, flag="0"), sep="/")
+ 
+as2029 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2029.csv", header=FALSE, stringsAsFactors=FALSE)
+as2029$ed <- paste(formatC(as2029$V2, width=3, flag="0"), formatC(as2029$V1, width=2, flag="0"), sep="/")
+
+as2031 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2031.csv", header=FALSE, stringsAsFactors=FALSE)
+as2031$ed <- paste(formatC(as2031$V2, width=3, flag="0"), formatC(as2031$V1, width=2, flag="0"), sep="/")
+
+as2032 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass2032.csv", header=FALSE, stringsAsFactors=FALSE)
+as2032$ed <- paste(formatC(as2032$V2, width=3, flag="0"), formatC(as2032$V1, width=2, flag="0"), sep="/")
+ 
+# GE2016 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/GE2016.csv", stringsAsFactors = FALSE)
+# GE2016$ed <- paste(formatC(GE2016$ED, width=3, flag="0"), formatC(GE2016$AD, width=2, flag="0"), sep="/")
+# GE2016$Tally <- as.numeric(GE2016$Tally)
+ 
+# Kings <- read_excel("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/KingsED_nov20.xlsx", skip = 4)
+# Kings <- na.omit(Kings)
+# Kings$ed <- paste(substr(Kings$`ELECTION DIST`, 9, 11), substr(Kings$`ELECTION DIST`, 7, 8), sep="/")
+```
+
+
+```{r}
+# Khaleel Anderson
+ka <- as2031 %>% 
+  filter(grepl('Khaleel Anderson', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(kac = sum(V4))
+re_as2031 <- left_join(ccd31, ka, by = 'ed')
+
+# Stacey G. Pheffer Amato
+sa <- as2023 %>% 
+  filter(grepl('Stacey G. Pheffer Amato', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(sac = sum(V4))
+re_as2031 <- left_join(re_as2031, sa, by = 'ed')
+
+# Peter D. Hatzipetros
+ph <- as2023 %>% 
+  filter(grepl('Peter D. Hatzipetros', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(phc = sum(V4))
+re_as2031 <- left_join(re_as2031, ph, by = 'ed')
+
+# Alicia L. Hyndman
+ah <- as2029 %>% 
+  filter(grepl('Alicia L. Hyndman', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(ahc = sum(V4))
+re_as2031 <- left_join(re_as2031, ah, by = 'ed')
+
+# Vivian E. Cook
+vc <- as2032 %>% 
+  filter(grepl('Vivian E. Cook', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(vcc = sum(V4))
+re_as2031 <- left_join(re_as2031, vc, by = 'ed')
+
+write.csv(re_as2031,'re_as2031.csv')
+```
+
+
+2018 Assembly - ccd31
+```{r}
+as1823 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass1823.csv", header=FALSE, stringsAsFactors=FALSE)
+as1823$ed <- paste(formatC(as1823$V2, width=3, flag="0"), formatC(as1823$V1, width=2, flag="0"), sep="/")
+
+# Stacey G. Pheffer Amato
+sa <- as1823 %>% 
+  filter(grepl('Stacey G. Pheffer Amato', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(sac = sum(V4))
+re_as1831 <- left_join(ccd31, sa, by = 'ed')
+
+# Matthew G. Pecorino
+mp <- as1823 %>% 
+  filter(grepl('Matthew G. Pecorino', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(mpc = sum(V4))
+re_as1831 <- left_join(re_as1831, mp, by = 'ed')
+
+write.csv(re_as1831,'re_as1831.csv')
+```
+
+
+2016 Assembly - ccd31
+```{r}
+as1623 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/Ass1623.csv", stringsAsFactors=FALSE)
+as1623$ed <- paste(formatC(as1623$ED, width=3, flag="0"), formatC(as1623$AD, width=2, flag="0"), sep="/")
+
+# Stacey G. Pheffer Amato
+sa <- as1623 %>% 
+  filter(grepl('Stacey G. Pheffer Amato', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(sac = sum(Tally))
+re_as1631 <- left_join(ccd31, sa, by = 'ed')
+
+# Alan N. Zwirn
+az <- as1623 %>% 
+  filter(grepl('Alan N. Zwirn', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(azc = sum(Tally))
+re_as1631 <- left_join(re_as1631, az, by = 'ed')
+
+write.csv(re_as1631,'re_as1631.csv')
+```
+
+
+2020 State Senator - ccd31 - ssd15
+```{r}
+ss2015 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss2015.csv", header = FALSE, stringsAsFactors=FALSE)
+ss2015$ed <- paste(formatC(ss2015$V2, width=3, flag="0"), formatC(ss2015$V1, width=2, flag="0"), sep="/")
+
+# Joseph P. Addabbo
+ja <- ss2015 %>% 
+  filter(grepl('Joseph P. Addabbo', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(jac = sum(V4))
+re_ss2015 <- left_join(ccd31, ja, by = 'ed')
+
+# Thomas P. Sullivan
+ts <- ss2015 %>% 
+  filter(grepl('Thomas P. Sullivan', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(tsc = sum(V4))
+re_ss2015 <- left_join(re_ss2015, ts, by = 'ed')
+
+write.csv(re_ss2015,'re_ss2015.csv')
+```
+
+
+2018 State Senator - ccd31 - ssd15
+```{r}
+ss1815 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss1815.csv", header = FALSE, stringsAsFactors=FALSE)
+ss1815$ed <- paste(formatC(ss1815$V2, width=3, flag="0"), formatC(ss1815$V1, width=2, flag="0"), sep="/")
+
+# Joseph P. Addabbo
+ja <- ss1815 %>% 
+  filter(grepl('Joseph P. Addabbo', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(jac = sum(V4))
+re_ss1815 <- left_join(ccd31, ja, by = 'ed')
+
+# Thomas P. Sullivan
+ts <- ss1815 %>% 
+  filter(grepl('Thomas P. Sullivan', V3)) %>% 
+  group_by(ed) %>% 
+  summarise(tsc = sum(V4))
+re_ss1815 <- left_join(re_ss1815, ts, by = 'ed')
+
+write.csv(re_ss1815,'re_ss1815.csv')
+```
+
+
+2016 State Senator - ccd31 - ssd10
+```{r}
+ss1610 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss1610.csv", stringsAsFactors=FALSE)
+ss1610$ed <- paste(formatC(ss1610$ED, width=3, flag="0"), formatC(ss1610$AD, width=2, flag="0"), sep="/")
+
+# James Sanders
+js <- ss1610 %>% 
+  filter(grepl('James Sanders', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(jsc = sum(Tally))
+re_ss1610 <- left_join(ccd31, js, by = 'ed')
+
+# Adrienne E. Adams 
+aa <- ss1610 %>% 
+  filter(grepl('Adrienne E. Adams', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(aac = sum(Tally))
+re_ss1610 <- left_join(re_ss1610, aa, by = 'ed')
+
+write.csv(re_ss1610,'re_ss1610.csv')
+```
+
+
+2016 State Senator - ccd31 - ssd14
+```{r}
+ss1614 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss1614.csv", stringsAsFactors=FALSE)
+ss1614$ed <- paste(formatC(ss1614$ED, width=3, flag="0"), formatC(ss1614$AD, width=2, flag="0"), sep="/")
+
+# Leroy G. Comrie
+lc <- ss1614 %>% 
+  filter(grepl('Leroy G. Comrie', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(lcc = sum(Tally))
+re_ss1614 <- left_join(ccd31, lc, by = 'ed')
+
+# Jarret N. Freeman 
+jf <- ss1614 %>% 
+  filter(grepl('Jarret N. Freeman', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(jfc = sum(Tally))
+re_ss1614 <- left_join(re_ss1614, jf, by = 'ed')
+
+write.csv(re_ss1614,'re_ss1614.csv')
+```
+
+
+2016 State Senator - ccd31 - ssd15
+```{r}
+ss1615 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss1615.csv", stringsAsFactors=FALSE)
+ss1615$ed <- paste(formatC(ss1615$ED, width=3, flag="0"), formatC(ss1615$AD, width=2, flag="0"), sep="/")
+
+# Joseph P. Addabbo
+ja <- ss1615 %>% 
+  filter(grepl('Joseph P. Addabbo', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(jac = sum(Tally))
+re_ss1615 <- left_join(ccd31, ja, by = 'ed')
+
+# Michael Conigliaro 
+mc <- ss1615 %>% 
+  filter(grepl('Michael Conigliaro', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(mcc = sum(Tally))
+re_ss1615 <- left_join(re_ss1615, mc, by = 'ed')
+
+write.csv(re_ss1615,'re_ss1615.csv')
+```
+
+
+2014 State Senator - ccd31 - ssd15
+```{r}
+ss1415 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss1415.csv", stringsAsFactors=FALSE)
+ss1415$ed <- paste(formatC(ss1415$ED, width=3, flag="0"), formatC(ss1415$AD, width=2, flag="0"), sep="/")
+
+# Joseph P. Addabbo
+ja <- ss1415 %>% 
+  filter(grepl('Joseph P. Addabbo', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(jac = sum(Tally))
+re_ss1415 <- left_join(ccd31, ja, by = 'ed')
+
+# Michael Conigliaro 
+mc <- ss1415 %>% 
+  filter(grepl('Michael Conigliaro', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(mcc = sum(Tally))
+re_ss1415 <- left_join(re_ss1415, mc, by = 'ed')
+
+write.csv(re_ss1415,'re_ss1415.csv')
+```
+
+
+
+2017 City Council - ccd31
+```{r}
+cc1731 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/cc1731.csv", stringsAsFactors=FALSE)
+cc1731$ed <- paste(formatC(cc1731$ED, width=3, flag="0"), formatC(cc1731$AD, width=2, flag="0"), sep="/")
+
+# Donovan J. Richards
+dr <- cc1731 %>% 
+  filter(grepl('Donovan J. Richards', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(drc = sum(Tally))
+re_cc1731 <- left_join(ccd31, dr, by = 'ed')
+
+write.csv(re_cc1731,'re_cc1731.csv')
+```
+
+
+```{r}
+qc <- read_excel("Desktop/ACS_Queens/qc.xlsx", skip = 1)
+qc$tn <- paste(as.integer(sub("/.*", ",", qc$NAME))
+               ,
+                 str_sub(ccd31$ed, -2,-1), sep = "/")
+
+qc$tn <- paste(str_sub(sub("/.*", ",", qc$NAME)))
+qc$tn <- substring(sub("\\,.*", "", qc$NAME), 14)
+write.csv(qc,'qc2.csv')
+```
+
+
+
+
+
+
+
+
+

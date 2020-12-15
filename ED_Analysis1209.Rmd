@@ -1,0 +1,86 @@
+---
+title: "ED_Analysis1202"
+author: "YingtongZhou"
+date: "12/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Organize ccd18 EDs
+```{r}
+D18 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/D18.csv")
+D18$ed <- paste(formatC(D18$ED, width=3, flag="0"), formatC(D18$AD, width=2, flag="0"), sep="/")
+dis18 <- D18 %>% 
+  distinct(ed) %>% 
+  filter(ed != "074/85", ed != "075/85")
+
+write.csv(dis18, "D18ed.csv")
+```
+
+
+Inner join ccd18 and state senator district 32 to get overlap
+```{r}
+ss32 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/SS2032.csv", header = FALSE)
+ss32$ed <- paste(formatC(ss32$V2, width=3, flag="0"), formatC(ss32$V1, width=2, flag="0"), sep="/")
+
+ued <- ss32 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(dis18)
+```
+
+Select distinct neighborhoods that overlap with ssd32
+```{r}
+D18en <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/D18ed.csv") %>% 
+  select(ed, nbh)
+addn <- left_join(ued, D18en, by = "ed")
+dn <- addn %>% distinct(nbh)
+```
+
+
+Inner join ccd18 and state senator district 34 to get overlap
+```{r}
+ss34 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/SS2034.csv", header = FALSE)
+ss34$ed <- paste(formatC(ss34$V2, width=3, flag="0"), formatC(ss34$V1, width=2, flag="0"), sep="/")
+
+ued2 <- ss34 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(dis18)
+# write.table(ued2, "ued2.txt", sep=' ')
+```
+
+Select distinct neighborhoods that overlap with ssd34
+```{r}
+addn2 <- left_join(ued2, D18en, by = "ed")
+dn2 <- addn2 %>% distinct(nbh)
+```
+
+
+Inner join ccd18 and congress district 15 to get overlap
+```{r}
+cd15 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/cd2015.csv", header = FALSE)
+cd15$ed <- paste(formatC(cd15$V2, width=3, flag="0"), formatC(cd15$V1, width=2, flag="0"), sep="/")
+
+ued3 <- cd15 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(dis18)
+```
+
+Select distinct neighborhoods that overlap with cd15
+```{r}
+addn3 <- left_join(ued3, D18en, by = "ed")
+dn3 <- addn3 %>% distinct(nbh)
+```

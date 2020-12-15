@@ -1,0 +1,296 @@
+---
+title: "ED_Analysis1214"
+author: "YingtongZhou"
+date: "12/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load ccd49 EDs
+```{r}
+ccd49 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd49.txt", stringsAsFactors = FALSE)
+ccd49$ed <- paste(formatC(as.integer(sub("/.*", "", ccd49$ed)), width=3, flag="0"),
+                 str_sub(ccd49$ed, -2,-1), sep = "/")
+```
+
+
+Inner join ccd49 and ssd23 for overlap
+```{r}
+ss23 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/rssd20_23.csv", header = FALSE)
+ss23$ed <- paste(formatC(ss23$V2, width=3, flag="0"), formatC(ss23$V1, width=2, flag="0"), sep="/")
+
+o4923 <- ss23 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd49)
+```
+
+
+Inner join ccd49 and ssd24 for overlap
+```{r}
+ss24 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/rssd20_24.csv", header = FALSE)
+ss24$ed <- paste(formatC(ss24$V2, width=3, flag="0"), formatC(ss24$V1, width=2, flag="0"), sep="/")
+
+o4924 <- ss24 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd49)
+```
+
+
+Load congresional district 11; inner join ccd49 for overlap
+```{r}
+cd11 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/rcd2011.csv", header = FALSE)
+cd11$ed <- paste(formatC(cd11$V2, width=3, flag="0"), formatC(cd11$V1, width=2, flag="0"), sep="/")
+
+o4911 <- cd11 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd49)
+```
+
+
+Load & Organize ccd51 EDs
+```{r}
+ccd51 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd51.txt", stringsAsFactors = FALSE)
+ccd51$ed <- paste(formatC(as.integer(sub("/.*", "", ccd51$ed)), width=3, flag="0"),
+                 str_sub(ccd51$ed, -2,-1), sep = "/")
+```
+
+
+Inner join ccd51 and state senator district 32 to get overlap
+```{r}
+ss32 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/SS2032.csv", header = FALSE)
+ss32$ed <- paste(formatC(ss32$V2, width=3, flag="0"), formatC(ss32$V1, width=2, flag="0"), sep="/")
+
+ued <- ss32 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(dis18)
+```
+
+
+Inner join ccd51 and ssd24 for overlap - Double check all EDs in ssd24
+```{r}
+o5124 <- ss24 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd51)
+```
+
+
+Load ccd31 EDs
+```{r}
+ccd31 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd31.txt", stringsAsFactors = FALSE)
+ccd31$ed <- paste(formatC(as.integer(sub("/.*", "", ccd31$ed)), width=3, flag="0"),
+                 str_sub(ccd31$ed, -2,-1), sep = "/")
+```
+
+
+Inner join ccd31 and ssd10 for overlap
+```{r}
+ss10 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss2010.csv", header = FALSE)
+ss10$ed <- paste(formatC(ss10$V2, width=3, flag="0"), formatC(ss10$V1, width=2, flag="0"), sep="/")
+
+o3110 <- ss10 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd31)
+```
+
+
+Inner join ccd31 and ssd14 for overlap
+```{r}
+ss14 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss2014.csv", header = FALSE)
+ss14$ed <- paste(formatC(ss14$V2, width=3, flag="0"), formatC(ss14$V1, width=2, flag="0"), sep="/")
+
+o3114 <- ss14 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd31)
+```
+
+
+Inner join ccd31 and ssd15 for overlap
+```{r}
+ss15 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ss2015.csv", header = FALSE)
+ss15$ed <- paste(formatC(ss15$V2, width=3, flag="0"), formatC(ss15$V1, width=2, flag="0"), sep="/")
+
+o3115 <- ss15 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd31)
+```
+
+
+```{r}
+cd5 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/cd2005.csv", header = FALSE)
+cd5$ed <- paste(formatC(cd5$V2, width=3, flag="0"), formatC(cd5$V1, width=2, flag="0"), sep="/")
+
+# Shaniyat Chowdhury
+sccd5 <- cd5 %>% 
+  filter(grepl('Shaniyat Chowdhury', V3))
+sum(sccd5$V4)
+
+# Gregory W. Meeks
+gmcd5 <- cd5 %>% 
+  filter(grepl('Gregory W. Meeks', V3))
+sum(gmcd5$V4)
+
+# Scattered
+stcd5 <- cd5 %>% 
+  filter(grepl('Scattered', V3))
+sum(stcd5$V4)
+```
+
+Join Congressional District 5 with ccd31 for overlap
+```{r}
+cd5ed <- cd5 %>% 
+  filter(V3 =="Public Counter") %>% 
+  select(ed) %>% 
+  inner_join(ccd31)
+```
+
+
+```{r}
+cd5 <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/cd1405.csv", header = TRUE)
+cd5$ed <- paste(formatC(cd5$ED, width=3, flag="0"), formatC(cd5$AD, width=2, flag="0"), sep="/")
+
+# Joseph R. Marthone
+jmcd5 <- cd5 %>% 
+  filter(grepl('Joseph R. Marthone', Unit.Name))
+sum(jmcd5$Tally)
+
+# Gregory W. Meeks
+gmcd5 <- cd5 %>% 
+  filter(grepl('Gregory W. Meeks', Unit.Name))
+sum(gmcd5$Tally)
+
+# Scattered
+stcd5 <- cd5 %>% 
+  filter(grepl('Scattered', Unit.Name))
+sum(stcd5$Tally)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ccd49
+Select distinct neighborhoods that overlap with ad61 & ad63 & ad64
+```{r}
+nbh49 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/nbh49.txt", stringsAsFactors = FALSE)
+nbh49$ad <- str_sub(nbh49$ed, -2,-1)
+nbh49$ed <- paste(formatC(as.integer(sub("/.*", "", nbh49$ed)), width=3, flag="0"),
+                 str_sub(nbh49$ed, -2,-1), sep = "/")
+
+nb4961 <- nbh49 %>% 
+  filter(ad == 61) %>% 
+  distinct(nbh)
+
+nb4963 <- nbh49 %>% 
+  filter(ad == 63) %>% 
+  distinct(nbh)
+
+nb4964 <- nbh49 %>% 
+  filter(ad == 64) %>% 
+  distinct(nbh)
+```
+
+
+Inner join ccd49 and ssd23 & ssd24 & cd11 for neighborhood overlap
+```{r}
+nb4923 <- left_join(o4923, nbh49, by = 'ed') %>% 
+  distinct(nbh)
+
+nb4924 <- left_join(o4924, nbh49, by = 'ed') %>% 
+  distinct(nbh)
+
+nb4911 <- nbh49 %>% 
+  distinct(nbh)
+```
+
+
+ccd51
+Select distinct neighborhoods that overlap with ad62 & ad63 & ad64
+```{r}
+nbh51 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/nbh51.txt", stringsAsFactors = FALSE)
+nbh51$ad <- str_sub(nbh51$ed, -2,-1)
+nbh51$ed <- paste(formatC(as.integer(sub("/.*", "", nbh51$ed)), width=3, flag="0"),
+                 str_sub(nbh51$ed, -2,-1), sep = "/")
+
+nb5161 <- nbh51 %>% 
+  filter(ad == 62) %>% 
+  distinct(nbh)
+
+nb5163 <- nbh51 %>% 
+  filter(ad == 63) %>% 
+  distinct(nbh)
+
+nb5164 <- nbh51 %>% 
+  filter(ad == 64) %>% 
+  distinct(nbh)
+```
+
+
+ccd31
+Select distinct neighborhoods that overlap with ad23 & ad29 & ad31
+```{r}
+nbh31 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/nbh31.txt", stringsAsFactors = FALSE)
+nbh31$ad <- str_sub(nbh31$ed, -2,-1)
+nbh31$ed <- paste(formatC(as.integer(sub("/.*", "", nbh31$ed)), width=3, flag="0"),
+                 str_sub(nbh31$ed, -2,-1), sep = "/")
+
+nb3123 <- nbh31 %>% 
+  filter(ad == 23) %>% 
+  distinct(nbh)
+
+nb3129 <- nbh31 %>% 
+  filter(ad == 29) %>% 
+  distinct(nbh)
+
+nb3131 <- nbh31 %>% 
+  filter(ad == 31) %>% 
+  distinct(nbh)
+
+nb3132 <- nbh31 %>% 
+  filter(ad == 32) %>% 
+  distinct(nbh)
+```
+
+
+Inner join ccd31 and ssd10 & ssd14 & ssd15 & cd5 for neighborhood overlap
+```{r}
+nb3110 <- left_join(o3110, nbh31, by = 'ed') %>% 
+  distinct(nbh)
+
+nb3114 <- left_join(o3114, nbh31, by = 'ed') %>% 
+  distinct(nbh)
+
+nb3115 <- left_join(o3115, nbh31, by = 'ed') %>% 
+  distinct(nbh)
+
+nb3105 <- nbh31 %>% 
+  distinct(nbh)
+```

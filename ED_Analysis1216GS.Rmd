@@ -22,7 +22,7 @@ library(sf)
 ```
 
 
-Load shapefile
+Load NYC EDs shapefile
 ```{r}
 nyed <- readOGR("~/Desktop/GeoSpatial/nyedwi_20d/nyedwi.shp")
 nyed@data$ElectDist <- as.numeric(as.character(nyed@data$ElectDist))
@@ -71,26 +71,88 @@ poly31 <- nyed2 %>%
   filter(nyed2$ElectDist %in% ccd31$ed) %>%
   summarise(ElectDist = "ccd31")
 
-(mp31 <- leaflet()  %>% 
-      setView(lng = -73.934314, lat = 40.687000,zoom = 10) %>% 
-      addTiles() %>% 
-      addPolygons(data = poly31,
-                  weight = 2,
-                  color = "brown",
-                  group = "ccd31 Outline"))
+# (mp31 <- leaflet()  %>% 
+#       setView(lng = -73.934314, lat = 40.687000,zoom = 10) %>% 
+#       addTiles() %>% 
+#       addPolygons(data = poly31,
+#                   weight = 2,
+#                   color = "brown",
+#                   group = "ccd31 Outline"))
 ```
 
 
+Load and join NYC Census Tracts & Queens Demographic Info
+```{r}
+quct <- readOGR("~/Desktop/GeoSpatial/NYC_CensusTract/nyu_2451_34505.shp")
+quct <- spTransform(quct, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+plotquct <- plot(quct)
+quct@data$namelsad <- as.numeric(substring(sub("\\,.*", "", quct@data$namelsad), 14))
+
+qdem <- read.csv("~/Desktop/GeoSpatial/ACS_Queens/qc2.csv", skip = 1)
+qdem <- qdem %>% 
+   select(-X, -X.1)
+
+quct@data <- left_join(quct@data, qdem, by = c("namelsad" = "CT"))
+quct$White. <- as.numeric(as.character(quct$White.))
+quct$Black. <- as.numeric(as.character(quct$Black.))
+quct$Asian. <- as.numeric(as.character(quct$Asian.))
+quct$Hispanic. <- as.numeric(as.character(quct$Hispanic.))
+```
 
 
+Set color bins for demographics
+```{r}
+bins2 <- c(0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100)
+palw <- colorBin("Purples", domain = quct$White., bins = bins2)
+pala <- colorBin("Greens", domain = quct$Black., bins = bins2)
+pals <- colorBin("Oranges", domain = quct$Asian., bins = bins2)
+palh <- colorBin("Greys", domain = quct$Hispanic., bins = bins2)
+```
 
 
+Add demographic info labels
+```{r}
+contentd <- paste("Census Tract#:", quct$namelsad,
+                  "White%:", quct$White.,
+                  "Black%:", quct$Black.,
+                  "Asian%:", quct$Asian.,
+                  "Hispanic%:", round(quct$Hispanic., 2))
+```
 
 
+Census tract map - White%
+```{r}
+# (mpct <- leaflet()  %>%
+#     setView(lng = -73.934314, lat = 40.687000,zoom = 10) %>%
+#     addTiles() %>%
+#     addPolygons(data = quct, 
+#                 fillColor = ~palw(White.),
+#                 weight = 1,
+#                 color = "yellow",
+#                 label = contentd,
+#                 fillOpacity = 0.9))
+```
 
 
+Load NYC School District
+```{r}
+sd <- readOGR("~/Desktop/GeoSpatial/nysd_20d/nysd.shp")
+sd <- spTransform(sd, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+plotsd <- plot(sd)
+```
 
 
+Map NY School District
+```{r}
+(msd <- leaflet()  %>%
+      setView(lng = -73.934314, lat = 40.687000,zoom = 10) %>%
+      addTiles() %>%
+      addPolygons(data = sd,
+                  weight = 2,
+                  color = "black",
+                  label = paste("School District", sd$SchoolDist),
+                  group = "School District"))
+```
 
 
 
@@ -133,17 +195,46 @@ Show NYC all EDs in leaflet
                 weight = 2,
                 color = "brown",
                 group = "ccd31 Outline") %>% 
+    addPolygons(data = quct, 
+                fillColor = ~palw(White.),
+                weight = 1,
+                color = "yellow",
+                label = contentd,
+                fillOpacity = 0.9,
+                group = "White%") %>% 
+    addPolygons(data = quct, 
+                fillColor = ~pala(Black.),
+                weight = 1,
+                color = "yellow",
+                label = contentd,
+                fillOpacity = 0.9,
+                group = "Black%") %>% 
+    addPolygons(data = quct, 
+                fillColor = ~pals(Asian.),
+                weight = 1,
+                color = "yellow",
+                label = contentd,
+                fillOpacity = 0.9,
+                group = "Asian%") %>% 
+    addPolygons(data = quct, 
+                fillColor = ~palh(Hispanic.),
+                weight = 1,
+                color = "yellow",
+                label = contentd,
+                fillOpacity = 0.9,
+                group = "Hispanic%") %>% 
+    addPolygons(data = sd,
+                weight = 2,
+                color = "black",
+                label = paste("School District", sd$SchoolDist),
+                group = "School District") %>% 
     addLayersControl(
        baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
-       overlayGroups = c("Biden NYC", "Biden ccd31", "Trump NYC", "Trump ccd31", "ccd31 Outline"),
-       options = layersControlOptions(collapsed = FALSE)))
-
-   # addMarkers(lng = -106.363590,lat=31.968483,popup="Hi there")
-   # addPolygons(data = nyed, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0) %>% 
-  # opacity = 1,
-  # color = "white",
-  # dashArray = "3",
-  # )
+       overlayGroups = c("Biden NYC", "Biden ccd31", "Trump NYC", "Trump ccd31", "ccd31 Outline",
+                         "White%", "Black%", "Asian%", "Hispanic%", "School District"),
+       options = layersControlOptions(collapsed = FALSE)) %>% 
+   hideGroup("Biden ccd31", "Trump NYC", "Trump ccd31", "ccd31 Outline",
+             "White%", "Black%", "Asian%", "Hispanic%", "School District"))
 ```
 
 

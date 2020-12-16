@@ -1,0 +1,150 @@
+---
+title: "ED_Analysis1216"
+author: "YingtongZhou"
+date: "12/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+library(rgdal)
+library(leaflet)
+library(RColorBrewer)
+library(tidyverse)
+library(sf)
+```
+
+
+Load shapefile
+```{r}
+nyed <- readOGR("~/Desktop/GeoSpatial/nyedwi_20d/nyedwi.shp")
+nyed@data$ElectDist <- as.numeric(as.character(nyed@data$ElectDist))
+nyed <- spTransform(nyed, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+plotnyed <- plot(nyed)
+```
+
+
+Load 2020 presidential results and join nyed
+```{r}
+pre20 <- read.csv("pre20ED.csv", header = TRUE)
+nyed@data <- left_join(nyed@data, pre20, by = c("ElectDist" = "ED"))
+```
+
+
+Set color bins for jbc & dtc
+```{r}
+bins <- c(0, 50, 100, 200, 300, 400, 500, 800, Inf)
+palb <- colorBin("Blues", domain = nyed$jbc, bins = bins)
+palr <- colorBin("Reds", domain = nyed$dtc, bins = bins)
+```
+
+
+Add labels
+```{r}
+contentb <- paste("ElectDistrict:", nyed$ElectDist,
+                 "Biden:", nyed$jbc,
+                 "Trump:", nyed$dtc)
+```
+
+
+Load Eds for ccd 31 and Subset ccd31 from nyed
+```{r}
+ccd31 <- read.delim("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/ccd31.txt", stringsAsFactors = FALSE)
+ccd31$ed <- paste(str_sub(ccd31$ed, -2,-1), formatC(as.integer(sub("/.*", "", ccd31$ed)), width=3, flag="0"), sep = '')
+
+sp31 <- nyed[nyed$ElectDist %in% ccd31$ed, ]
+```
+
+
+Get outline for for ccd31
+```{r}
+nyed2 <- sf::st_as_sf(nyed)
+
+poly31 <- nyed2 %>%
+  filter(nyed2$ElectDist %in% ccd31$ed) %>%
+  summarise(ElectDist = "ccd31")
+
+(mp31 <- leaflet()  %>% 
+      setView(lng = -73.934314, lat = 40.687000,zoom = 10) %>% 
+      addTiles() %>% 
+      addPolygons(data = poly31,
+                  weight = 2,
+                  color = "brown",
+                  group = "ccd31 Outline"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Show NYC all EDs in leaflet
+```{r}
+(plot2 <- leaflet()  %>% 
+    setView(lng = -73.934314, lat = 40.687000,zoom = 10) %>% 
+    addTiles(group = "OSM (default)") %>%
+    addProviderTiles(providers$Stamen.Toner, group = "Toner") %>%
+    addProviderTiles(providers$Stamen.TonerLite, group = "Toner Lite") %>%
+    addPolygons(data = nyed,
+                fillColor = ~palb(jbc),
+                weight = 1,
+                fillOpacity = 0.9,
+                label = contentb,
+                group = "Biden NYC") %>%
+    addPolygons(data = sp31, 
+                fillColor = ~palb(jbc),
+                weight = 1,
+                fillOpacity = 0.9，
+                label = contentb,
+                group = "Biden ccd31") %>%
+    addPolygons(data = nyed, 
+                fillColor = ~palr(dtc),
+                weight = 1,
+                color = "red",
+                fillOpacity = 0.9，
+                label = contentb,
+                group = "Trump NYC") %>% 
+    addPolygons(data = sp31, 
+                fillColor = ~palr(dtc),
+                weight = 1,
+                color = "red",
+                fillOpacity = 0.9，
+                label = contentb,
+                group = "Trump ccd31") %>% 
+    addPolygons(data = poly31,
+                weight = 2,
+                color = "brown",
+                group = "ccd31 Outline") %>% 
+    addLayersControl(
+       baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+       overlayGroups = c("Biden NYC", "Biden ccd31", "Trump NYC", "Trump ccd31", "ccd31 Outline"),
+       options = layersControlOptions(collapsed = FALSE)))
+
+   # addMarkers(lng = -106.363590,lat=31.968483,popup="Hi there")
+   # addPolygons(data = nyed, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0) %>% 
+  # opacity = 1,
+  # color = "white",
+  # dashArray = "3",
+  # )
+```
+
+
+

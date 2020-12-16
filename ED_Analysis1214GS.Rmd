@@ -1,0 +1,30 @@
+---
+title: "ED_Analysis1214"
+author: "YingtongZhou"
+date: "12/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load Eric Adam's all EDs and reorganize to AD0ED
+```{r}
+pre20ea <- read.csv("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies/pre20ea.csv", header = TRUE)
+pre20ea$ED <- paste(str_sub(pre20ea$ed, -2,-1), substring(pre20ea$ed, 1, 3), sep = "")
+write.csv(pre20ea, "pre20ED.csv")
+```
+
+
+
+
+

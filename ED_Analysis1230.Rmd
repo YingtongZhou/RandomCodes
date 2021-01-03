@@ -1,0 +1,136 @@
+---
+title: "49.Absentee"
+author: "YingtongZhou"
+date: "12/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load ccd49 & 2020President
+```{r}
+ccd49 <- read.delim("ccd49.txt", stringsAsFactors = FALSE)
+ccd49$ed <- paste(formatC(as.integer(sub("/.*", "", ccd49$ed)), width=3, flag="0"),
+                 str_sub(ccd49$ed, -2,-1), sep = "/")
+
+president2020 <- read.csv("2020President.csv", header = FALSE, stringsAsFactors = FALSE)
+president2020$ed <- paste(formatC(president2020$V2, width=3, flag="0"), formatC(president2020$V1, width=2, flag="0"), sep="/")
+
+# Absentee / Military
+president2020 <- president2020 %>% 
+  select(-V1, -V2, -V3) %>% 
+  filter(V4 == "Absentee / Military")
+```
+
+
+Join ccd49 & 2020President
+```{r}
+ab49 <- left_join(ccd49, president2020, by = "ed")
+write.csv(ab49, "ab49.csv")
+```
+
+
+ccd18
+```{r}
+ccd18 <- read.delim("ccd18.txt", stringsAsFactors = FALSE)
+ccd18$ed <- paste(formatC(as.integer(sub("/.*", "", ccd18$ed)), width=3, flag="0"),
+                 str_sub(ccd18$ed, -2,-1), sep = "/")
+ab18 <- left_join(ccd18, president2020, by = "ed")
+write.csv(ab18, "ab18.csv")
+```
+
+
+ccd31
+```{r}
+ccd31 <- read.delim("ccd31.txt", stringsAsFactors = FALSE)
+ccd31$ed <- paste(formatC(as.integer(sub("/.*", "", ccd31$ed)), width=3, flag="0"),
+                 str_sub(ccd31$ed, -2,-1), sep = "/")
+ab31 <- left_join(ccd31, president2020, by = "ed")
+write.csv(ab31, "ab31.csv")
+```
+
+
+ccd51
+```{r}
+ccd51 <- read.delim("ccd51.txt", stringsAsFactors = FALSE)
+ccd51$ed <- paste(formatC(as.integer(sub("/.*", "", ccd51$ed)), width=3, flag="0"),
+                 str_sub(ccd51$ed, -2,-1), sep = "/")
+ab51 <- left_join(ccd51, president2020, by = "ed")
+write.csv(ab51, "ab51.csv")
+```
+
+
+Obtain ccd35 EDs
+```{r}
+ccd35 <- read.csv("ccd35_17re.csv", stringsAsFactors = FALSE)
+ccd35$ed <- paste(formatC(ccd35$ED, width=3, flag="0"), 
+                  formatC(ccd35$AD, width=2, flag="0"), sep="/")
+
+ccd35 <- ccd35 %>% 
+  select(ed) %>% 
+  distinct()
+
+write.csv(ccd35, "ccd35.csv")
+```
+
+
+ssd25 join ccd35
+```{r}
+ssd25 <- read.csv("ssd25.csv", stringsAsFactors = FALSE, header = FALSE)
+ssd25$ed <- paste(formatC(ssd25$V2, width=3, flag="0"), 
+                  formatC(ssd25$V1, width=2, flag="0"), sep="/")
+ssd25 <- ssd25 %>% 
+  select(ed) %>% 
+  distinct()
+o2535 <- inner_join(ccd35, ssd25)
+write.csv(o2535, "s25c35.csv")
+```
+
+
+ssd20 join ccd35
+```{r}
+ssd20 <- read.csv("ssd20.csv", stringsAsFactors = FALSE, header = FALSE)
+ssd20$ed <- paste(formatC(ssd20$V2, width=3, flag="0"), 
+                  formatC(ssd20$V1, width=2, flag="0"), sep="/")
+ssd20 <- ssd20 %>% 
+  select(ed) %>% 
+  distinct()
+o2035 <- inner_join(ccd35, ssd20)
+write.csv(o2035, "s20c35.csv")
+```
+
+
+cd9 join ccd35
+```{r}
+cd9 <- read.csv("cd9.csv", stringsAsFactors = FALSE, header = FALSE)
+cd9$ed <- paste(formatC(cd9$V2, width=3, flag="0"), 
+                  formatC(cd9$V1, width=2, flag="0"), sep="/")
+cd9 <- cd9 %>% 
+  select(ed) %>% 
+  distinct()
+o935 <- inner_join(ccd35, cd9)
+write.csv(o935, "o935.csv")
+```
+
+
+cd11 join ccd35
+```{r}
+cd11 <- read.csv("cd11.csv", stringsAsFactors = FALSE, header = FALSE)
+cd11$ed <- paste(formatC(cd11$V2, width=3, flag="0"), 
+                  formatC(cd11$V1, width=2, flag="0"), sep="/")
+cd11 <- cd11 %>% 
+  select(ed) %>% 
+  distinct()
+o1135 <- inner_join(ccd35, cd11)
+# write.csv(o935, "o935.csv")
+```

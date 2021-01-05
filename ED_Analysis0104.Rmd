@@ -1,0 +1,697 @@
+---
+title: "ccd35PastPrimaries"
+author: "YingtongZhou"
+date: "01/04/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+# Load ccd35 & 2017 ccd primaries
+```{r}
+ccd35 <- read.delim("ccd35.txt", stringsAsFactors = FALSE)
+ccd35$ed <- paste(formatC(as.integer(sub("/.*", "", ccd35$ed)), width=3, flag="0"),
+                 str_sub(ccd35$ed, -2,-1), sep = "/")
+
+cc17p <- read.csv("ccd35_17dp.csv", header = TRUE, stringsAsFactors = FALSE)
+cc17p$ed <- paste(formatC(cc17p$ED, width=3, flag="0"), formatC(cc17p$AD, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+cc17p_ab <- cc17p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Absentee / Military") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+write.csv(cc17p_ab, "cc17p_ab.csv")
+```
+
+
+Ede S. Fox
+```{r}
+cc17p_fox <- cc17p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Ede S. Fox") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+write.csv(cc17p_fox, "cc17p_fox.csv")
+```
+
+
+Laurie A. Cumbo
+```{r}
+cc17p_cumbo <- cc17p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Laurie A. Cumbo") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+write.csv(cc17p_cumbo, "cc17p_cumbo.csv")
+```
+
+
+# Load ad43_20p
+```{r}
+ad43_20p <- read.csv("ad43_20p.csv", header = FALSE, stringsAsFactors = FALSE)
+ad43_20p$ed <- paste(formatC(ad43_20p$V2, width=3, flag="0"), formatC(ad43_20p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ad43_20p_re <- ad43_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  select(-V3) %>% 
+  right_join(ccd35, by = "ed")
+names(ad43_20p_re)[names(ad43_20p_re) == "V4"] <- "ab"
+```
+
+
+Jesse E. Hamilton
+```{r}
+ad43_20p_re <- ad43_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Jesse E. Hamilton") %>% 
+  select(-V3) %>% 
+  right_join(ad43_20p_re, by = "ed")
+names(ad43_20p_re)[names(ad43_20p_re) == "V4"] <- "jh"
+```
+
+
+Diana Richardson
+```{r}
+ad43_20p_re <- ad43_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Diana Richardson") %>% 
+  select(-V3) %>% 
+  right_join(ad43_20p_re, by = "ed")
+names(ad43_20p_re)[names(ad43_20p_re) == "V4"] <- "dr"
+
+write.csv(ad43_20p_re, "ad43_20p_re.csv")
+```
+
+
+# Load ad43_15sp
+```{r}
+ad43_15sp <- read.csv("ad43_15sp.csv", header = TRUE, stringsAsFactors = FALSE)
+ad43_15sp$ed <- paste(formatC(ad43_15sp$ED, width=3, flag="0"), formatC(ad43_15sp$AD, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ad43_15sp_re <- ad43_15sp %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Absentee/Military") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+names(ad43_15sp_re)[names(ad43_15sp_re) == "Tally"] <- "ab"
+```
+
+
+Menachem M. Raitport
+```{r}
+ad43_15sp_re <- ad43_15sp %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Menachem M. Raitport', Unit.Name)) %>% 
+  select(-Unit.Name) %>% 
+  group_by(ed) %>% 
+  summarise(mr= sum(Tally)) %>% 
+  right_join(ad43_15sp_re, by = "ed")
+names(ad43_15sp_re)[names(ad43_15sp_re) == "Tally"] <- "mr"
+```
+
+
+Diana Richardson
+```{r}
+ad43_15sp_re <- ad43_15sp %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Diana C. Richardson', Unit.Name)) %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad43_15sp_re, by = "ed")
+names(ad43_15sp_re)[names(ad43_15sp_re) == "Tally"] <- "dr"
+```
+
+
+Shirley M. Patterson
+```{r}
+ad43_15sp_re <- ad43_15sp %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Shirley M. Patterson', Unit.Name)) %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad43_15sp_re, by = "ed")
+names(ad43_15sp_re)[names(ad43_15sp_re) == "Tally"] <- "sp"
+```
+
+
+Geoffrey A. Davis
+```{r}
+ad43_15sp_re <- ad43_15sp %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Geoffrey A. Davis', Unit.Name)) %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad43_15sp_re, by = "ed")
+names(ad43_15sp_re)[names(ad43_15sp_re) == "Tally"] <- "gd"
+
+write.csv(ad43_15sp_re, "ad43_15sp_re.csv")
+```
+
+
+# Load ad50_20p
+```{r}
+ad50_20p <- read.csv("ad50_20p.csv", header = FALSE, stringsAsFactors = FALSE)
+ad50_20p$ed <- paste(formatC(ad50_20p$V2, width=3, flag="0"), formatC(ad50_20p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ad50_20p_re <- ad50_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  select(-V3) %>% 
+  right_join(ccd35, by = "ed")
+names(ad50_20p_re)[names(ad50_20p_re) == "V4"] <- "ab"
+```
+
+
+Emily E. Gallagher
+```{r}
+ad50_20p_re <- ad50_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Emily E. Gallagher") %>% 
+  select(-V3) %>% 
+  right_join(ad50_20p_re, by = "ed")
+names(ad50_20p_re)[names(ad50_20p_re) == "V4"] <- "eg"
+```
+
+
+Joseph R. Lentol
+```{r}
+ad50_20p_re <- ad50_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Joseph R. Lentol") %>% 
+  select(-V3) %>% 
+  right_join(ad50_20p_re, by = "ed")
+names(ad50_20p_re)[names(ad50_20p_re) == "V4"] <- "jl"
+
+write.csv(ad50_20p_re, "ad50_20p_re.csv")
+```
+
+
+# Load ad52_14p
+```{r}
+ad52_14p <- read.csv("ad52_14p.csv", header = TRUE, stringsAsFactors = FALSE)
+ad52_14p$ed <- paste(formatC(ad52_14p$ED, width=3, flag="0"), formatC(ad52_14p$AD, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ad52_14p_re <- ad52_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Absentee/Military") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+names(ad52_14p_re)[names(ad52_14p_re) == "Tally"] <- "ab"
+```
+
+
+Jo Anne Simon
+```{r}
+ad52_14p_re <- ad52_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Jo Anne Simon") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad52_14p_re, by = "ed")
+names(ad52_14p_re)[names(ad52_14p_re) == "Tally"] <- "js"
+```
+
+
+Peter J. Sikora
+```{r}
+ad52_14p_re <- ad52_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Peter J. Sikora") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad52_14p_re, by = "ed")
+names(ad52_14p_re)[names(ad52_14p_re) == "Tally"] <- "ps"
+```
+
+
+Doug Biviano
+```{r}
+ad52_14p_re <- ad52_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Doug Biviano") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad52_14p_re, by = "ed")
+names(ad52_14p_re)[names(ad52_14p_re) == "Tally"] <- "db"
+
+write.csv(ad52_14p_re, "ad52_14p_re.csv")
+```
+
+
+# Load ad56_20p
+```{r}
+ad56_20p <- read.csv("ad56_20p.csv", header = FALSE, stringsAsFactors = FALSE)
+ad56_20p$ed <- paste(formatC(ad56_20p$V2, width=3, flag="0"), formatC(ad56_20p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ad56_20p_re <- ad56_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  select(-V3) %>% 
+  right_join(ccd35, by = "ed")
+names(ad56_20p_re)[names(ad56_20p_re) == "V4"] <- "ab"
+```
+
+
+Justin Cohen
+```{r}
+ad56_20p_re <- ad56_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Justin Cohen") %>% 
+  select(-V3) %>% 
+  right_join(ad56_20p_re, by = "ed")
+names(ad56_20p_re)[names(ad56_20p_re) == "V4"] <- "jc"
+```
+
+
+Stefani L. Zinerman
+```{r}
+ad56_20p_re <- ad56_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Stefani L. Zinerman") %>% 
+  select(-V3) %>% 
+  right_join(ad56_20p_re, by = "ed")
+names(ad56_20p_re)[names(ad56_20p_re) == "V4"] <- "sz"
+
+write.csv(ad56_20p_re, "ad56_20p_re.csv")
+```
+
+
+# Load ad56_16p
+```{r}
+ad56_16p <- read.csv("ad56_16p.csv", header = TRUE, stringsAsFactors = FALSE)
+ad56_16p$ed <- paste(formatC(ad56_16p$ED, width=3, flag="0"), formatC(ad56_16p$AD, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ad56_16p_re <- ad56_16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Absentee/Military") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+names(ad56_16p_re)[names(ad56_16p_re) == "Tally"] <- "ab"
+```
+
+
+Karen Z. Cherry
+```{r}
+ad56_16p_re <- ad56_16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Karen Z. Cherry") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad56_16p_re, by = "ed")
+names(ad56_16p_re)[names(ad56_16p_re) == "Tally"] <- "kc"
+```
+
+
+Tremaine S. Wright
+```{r}
+ad56_16p_re <- ad56_16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Tremaine S. Wright") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ad56_16p_re, by = "ed")
+names(ad56_16p_re)[names(ad56_16p_re) == "Tally"] <- "tw"
+
+write.csv(ad56_16p_re, "ad56_16p_re.csv")
+```
+
+
+# Load ad57_20p
+```{r}
+ad57_20p <- read.csv("ad57_20p.csv", header = FALSE, stringsAsFactors = FALSE)
+ad57_20p$ed <- paste(formatC(ad57_20p$V2, width=3, flag="0"), formatC(ad57_20p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ad57_20p_re <- ad57_20p %>% 
+  select(-V1, -V2, -V3) %>% 
+  filter(V4 == "Absentee / Military") %>% 
+  select(-V4) %>% 
+  right_join(ccd35, by = "ed")
+names(ad57_20p_re)[names(ad57_20p_re) == "V5"] <- "ab"
+```
+
+
+Walter T. Mosley III
+```{r}
+ad57_20p_re <- ad57_20p %>% 
+  select(-V1, -V2, -V3) %>% 
+  filter(V4 == "Walter T. Mosley III") %>% 
+  select(-V4) %>% 
+  right_join(ad57_20p_re, by = "ed")
+names(ad57_20p_re)[names(ad57_20p_re) == "V5"] <- "wm"
+```
+
+
+Phara Souffrant Forrest
+```{r}
+ad57_20p_re <- ad57_20p %>% 
+  select(-V1, -V2, -V3) %>% 
+  filter(V4 == "Phara Souffrant Forrest") %>% 
+  select(-V4) %>% 
+  right_join(ad57_20p_re, by = "ed")
+names(ad57_20p_re)[names(ad57_20p_re) == "V5"] <- "pf"
+
+write.csv(ad57_20p_re, "ad57_20p_re.csv")
+```
+
+
+# Load ss20_18p
+```{r}
+ss20_18p <- read.csv("ss20_18p.csv", header = FALSE, stringsAsFactors = FALSE)
+ss20_18p$ed <- paste(formatC(ss20_18p$V2, width=3, flag="0"), formatC(ss20_18p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ss20_18p_re <- ss20_18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  select(-V3) %>% 
+  right_join(ccd35, by = "ed")
+names(ss20_18p_re)[names(ss20_18p_re) == "V4"] <- "ab"
+```
+
+
+Jesse E. Hamilton
+```{r}
+ss20_18p_re <- ss20_18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Jesse E. Hamilton") %>% 
+  select(-V3) %>% 
+  right_join(ss20_18p_re, by = "ed")
+names(ss20_18p_re)[names(ss20_18p_re) == "V4"] <- "jh"
+```
+
+
+Zellnor Y. Myrie
+```{r}
+ss20_18p_re <- ss20_18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Zellnor Y. Myrie") %>% 
+  select(-V3) %>% 
+  right_join(ss20_18p_re, by = "ed")
+names(ss20_18p_re)[names(ss20_18p_re) == "V4"] <- "zm"
+
+write.csv(ss20_18p_re, "ss20_18p_re.csv")
+```
+
+
+# Load ss20_14p
+```{r}
+ss20_14p <- read.csv("ss20_14p.csv", header = TRUE, stringsAsFactors = FALSE)
+ss20_14p$ed <- paste(formatC(ss20_14p$ED, width=3, flag="0"), formatC(ss20_14p$AD, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ss20_14p_re <- ss20_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Absentee/Military") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+names(ss20_14p_re)[names(ss20_14p_re) == "Tally"] <- "ab"
+```
+
+
+Guillermo E. Philpotts	
+```{r}
+ss20_14p_re <- ss20_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Guillermo E. Philpotts") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ss20_14p_re, by = "ed")
+names(ss20_14p_re)[names(ss20_14p_re) == "Tally"] <- "gp"
+```
+
+
+Rubain J. Dorancy
+```{r}
+ss20_14p_re <- ss20_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Rubain J. Dorancy") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ss20_14p_re, by = "ed")
+names(ss20_14p_re)[names(ss20_14p_re) == "Tally"] <- "rd"
+```
+
+
+Jesse E. Hamilton
+```{r}
+ss20_14p_re <- ss20_14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Jesse E. Hamilton") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ss20_14p_re, by = "ed")
+names(ss20_14p_re)[names(ss20_14p_re) == "Tally"] <- "jh"
+
+write.csv(ss20_14p_re, "ss20_14p_re.csv")
+```
+
+
+# Load ss25_20p
+```{r}
+ss25_20p <- read.csv("ss25_20p.csv", header = FALSE, stringsAsFactors = FALSE)
+ss25_20p$ed <- paste(formatC(ss25_20p$V2, width=3, flag="0"), formatC(ss25_20p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ss25_20p_re <- ss25_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  select(-V3) %>% 
+  right_join(ccd35, by = "ed")
+names(ss25_20p_re)[names(ss25_20p_re) == "V4"] <- "ab"
+```
+
+
+Jabari Brisport
+```{r}
+ss25_20p_re <- ss25_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Jabari Brisport") %>% 
+  select(-V3) %>% 
+  right_join(ss25_20p_re, by = "ed")
+names(ss25_20p_re)[names(ss25_20p_re) == "V4"] <- "jb"
+```
+
+
+Tremaine S. Wright
+```{r}
+ss25_20p_re <- ss25_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Tremaine S. Wright") %>% 
+  select(-V3) %>% 
+  right_join(ss25_20p_re, by = "ed")
+names(ss25_20p_re)[names(ss25_20p_re) == "V4"] <- "tw"
+```
+
+
+Jason Salmon
+```{r}
+ss25_20p_re <- ss25_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Jason Salmon") %>% 
+  select(-V3) %>% 
+  right_join(ss25_20p_re, by = "ed")
+names(ss25_20p_re)[names(ss25_20p_re) == "V4"] <- "js"
+
+write.csv(ss25_20p_re, "ss25_20p_re.csv")
+```
+
+
+# Load ss25_16p
+```{r}
+ss25_16p <- read.csv("ss25_16p.csv", header = TRUE, stringsAsFactors = FALSE)
+ss25_16p$ed <- paste(formatC(ss25_16p$ED, width=3, flag="0"), formatC(ss25_16p$AD, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+ss25_16p_re <- ss25_16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Absentee/Military") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ccd35, by = "ed")
+names(ss25_16p_re)[names(ss25_16p_re) == "Tally"] <- "ab"
+```
+
+
+Michael G. Cox
+```{r}
+ss25_16p_re <- ss25_16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Michael G. Cox") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ss25_16p_re, by = "ed")
+names(ss25_16p_re)[names(ss25_16p_re) == "Tally"] <- "mc"
+```
+
+
+Velmanette Montgomery
+```{r}
+ss25_16p_re <- ss25_16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Velmanette Montgomery") %>% 
+  select(-Unit.Name) %>% 
+  right_join(ss25_16p_re, by = "ed")
+names(ss25_16p_re)[names(ss25_16p_re) == "Tally"] <- "vm"
+
+write.csv(ss25_16p_re, "ss25_16p_re.csv")
+```
+
+
+# Load cd9_20p
+```{r}
+cd9_20p <- read.csv("cd9_20p.csv", header = FALSE, stringsAsFactors = FALSE)
+cd9_20p$ed <- paste(formatC(cd9_20p$V2, width=3, flag="0"), formatC(cd9_20p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+cd9_20p_re <- cd9_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  select(-V3) %>% 
+  right_join(ccd35, by = "ed")
+names(cd9_20p_re)[names(cd9_20p_re) == "V4"] <- "ab"
+```
+
+
+Isiah James
+```{r}
+cd9_20p_re <- cd9_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Isiah James") %>% 
+  select(-V3) %>% 
+  right_join(cd9_20p_re, by = "ed")
+names(cd9_20p_re)[names(cd9_20p_re) == "V4"] <- "ij"
+```
+
+
+Chaim M. Deutsch
+```{r}
+cd9_20p_re <- cd9_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Chaim M. Deutsch") %>% 
+  select(-V3) %>% 
+  right_join(cd9_20p_re, by = "ed")
+names(cd9_20p_re)[names(cd9_20p_re) == "V4"] <- "cd"
+```
+
+
+Adem Bunkeddeko
+```{r}
+cd9_20p_re <- cd9_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Adem Bunkeddeko") %>% 
+  select(-V3) %>% 
+  right_join(cd9_20p_re, by = "ed")
+names(cd9_20p_re)[names(cd9_20p_re) == "V4"] <- "adem"
+```
+
+
+Lutchi Gayot
+```{r}
+cd9_20p_re <- cd9_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Lutchi Gayot") %>% 
+  select(-V3) %>% 
+  right_join(cd9_20p_re, by = "ed")
+names(cd9_20p_re)[names(cd9_20p_re) == "V4"] <- "lg"
+```
+
+
+Yvette D. Clarke
+```{r}
+cd9_20p_re <- cd9_20p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Yvette D. Clarke") %>% 
+  select(-V3) %>% 
+  right_join(cd9_20p_re, by = "ed")
+names(cd9_20p_re)[names(cd9_20p_re) == "V4"] <- "yc"
+
+write.csv(cd9_20p_re, "cd9_20p_re.csv")
+```
+
+
+# Load cd9_18p
+```{r}
+cd9_18p <- read.csv("cd9_18p.csv", header = FALSE, stringsAsFactors = FALSE)
+cd9_18p$ed <- paste(formatC(cd9_18p$V2, width=3, flag="0"), formatC(cd9_18p$V1, width=2, flag="0"), sep="/")
+```
+
+
+Absentee / Military
+```{r}
+cd9_18p_re <- cd9_18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  select(-V3) %>% 
+  right_join(ccd35, by = "ed")
+names(cd9_18p_re)[names(cd9_18p_re) == "V4"] <- "ab"
+```
+
+
+Adem Bunkeddeko
+```{r}
+cd9_18p_re <- cd9_18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Adem Bunkeddeko") %>% 
+  select(-V3) %>% 
+  right_join(cd9_18p_re, by = "ed")
+names(cd9_18p_re)[names(cd9_18p_re) == "V4"] <- "adem"
+```
+
+
+Yvette D. Clarke
+```{r}
+cd9_18p_re <- cd9_18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Yvette D. Clarke") %>% 
+  select(-V3) %>% 
+  right_join(cd9_18p_re, by = "ed")
+names(cd9_18p_re)[names(cd9_18p_re) == "V4"] <- "yc"
+
+write.csv(cd9_18p_re, "cd9_18p_re.csv")
+```

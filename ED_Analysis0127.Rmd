@@ -1,0 +1,362 @@
+---
+title: "EDAnalysis_0127"
+author: "YingtongZhou"
+date: "1/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load 2017 ccd14 to get EDs
+```{r}
+ccd1417 <- read.csv("ccd1417.csv", header = TRUE, stringsAsFactors = FALSE)
+ccd1417$ed <- paste(formatC(ccd1417$ED, width=3, flag="0"), formatC(ccd1417$AD, width=2, flag="0"), sep="/")
+ccd1417_ed <- ccd1417 %>% 
+  distinct(ed)
+write.csv(ccd1417_ed, "ccd1417_ed.csv")
+```
+
+
+Load neighborhoods for ccd14
+```{r}
+ccd14n <- read.delim("ccd14nbh.txt", header = TRUE, stringsAsFactors = FALSE)
+ccd14n$ed <- paste(formatC(as.integer(sub("/.*", "", ccd14n$ed)), width=3, flag="0"),
+                 str_sub(ccd14n$ed, -2,-1), sep = "/")
+ccd14nbh <- left_join(ccd1417_ed, ccd14n, by = "ed")
+write.csv(ccd14nbh, "ccd14nbh.csv")
+```
+
+
+Load 2020 Presidential
+```{r}
+president2020 <- read.csv("2020President.csv", header = FALSE, stringsAsFactors = FALSE)
+president2020$ed <- paste(formatC(president2020$V2, width=3, flag="0"), formatC(president2020$V1, width=2, flag="0"), sep="/")
+
+# Absentee / Military
+pre20ab <- president2020 %>% 
+  select(-V1, -V2, -V3) %>% 
+  filter(V4 == "Absentee / Military")
+```
+
+
+Join ccd14 & 2020President
+```{r}
+ab14 <- left_join(ccd1417_ed, pre20ab, by = "ed")
+write.csv(ab14, "ab14.csv")
+```
+
+
+Biden2020 in ccd14
+```{r}
+president2020$V5 <- as.numeric(president2020$V5)
+pre20b <- president2020 %>% 
+  select(-V1, -V2, -V3) %>% 
+  filter(grepl('Joseph R. Biden', V4)) %>% 
+  group_by(ed) %>% 
+  summarise(biden = sum(V5))
+
+biden20 <- left_join(ccd1417_ed, pre20b, by = "ed")
+
+pre20t <- president2020 %>% 
+  select(-V1, -V2, -V3) %>% 
+  filter(grepl('Donald J. Trump', V4)) %>% 
+  group_by(ed) %>% 
+  summarise(trump = sum(V5))
+
+p20c14 <- left_join(biden20, pre20t, by = "ed")
+```
+
+
+Just add biden total to trump total for total votes; ignore this
+```{r}
+pre20sp <- president2020 %>% 
+  select(-V1, -V2, -V3) %>% 
+  spread(V4, V5)
+
+pre20sp[is.na(pre20sp)] <- 0
+
+pre20sp$ttl <- pre20sp$`Absentee / Military` + pre20sp$Federal + pre20sp$`Public Counter` + pre20sp$Scattered
+prettl <- pre20sp %>% 
+  select(ed, ttl)
+p20ttl <- left_join(p20c14, prettl, by = "ed")
+write.csv(p20ttl, "p20c14.csv")
+```
+
+
+2016 Presidential
+```{r}
+pre16 <- read.csv("GE2016.csv", stringsAsFactors = FALSE)
+pre16$ed <- paste(formatC(pre16$ED, width=3, flag="0"), formatC(pre16$AD, width=2, flag="0"), sep="/")
+pre16$Tally <- as.numeric(pre16$Tally)
+
+pre16ab <- pre16 %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Absentee / Military")
+
+p16c14 <- left_join(ccd1417_ed, pre16ab, by = "ed")
+
+hc <- pre16 %>% 
+  filter(grepl('Hillary Clinton', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(hrc = sum(Tally))
+p16c14 <- left_join(p16c14, hc, by = "ed")
+
+dt <- pre16 %>% 
+  filter(grepl('Donald J. Trump', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(dtc = sum(Tally))
+p16c14 <- left_join(p16c14, dt, by = "ed")
+
+write.csv(p16c14, "p16c14.csv")
+```
+
+
+Congress district 13 2020 primary
+```{r}
+cd13p20 <- read.csv("cd13p20.csv", stringsAsFactors = FALSE, header = FALSE)
+cd13p20$ed <- paste(formatC(cd13p20$V2, width=3, flag="0"), formatC(cd13p20$V1, width=2, flag="0"), sep="/")
+
+# Ramon Rodriguez
+result <- cd13p20 %>% 
+  filter(grepl('Ramon Rodriguez', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(RR = V4) %>% 
+  right_join(ccd1417_ed)
+
+# James Felton Keith II
+result <- cd13p20 %>% 
+  filter(grepl('James Felton Keith II', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(JK = V4) %>% 
+  right_join(result)
+
+# Adriano Espaillat
+result <- cd13p20 %>% 
+  filter(grepl('Adriano Espaillat', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(AE = V4) %>% 
+  right_join(result)
+
+write.csv(result, "result.csv")
+```
+
+
+Congress district 15 2020 primary
+```{r}
+cd15p20 <- read.csv("cd15p20.csv", stringsAsFactors = FALSE, header = FALSE)
+cd15p20$ed <- paste(formatC(cd15p20$V2, width=3, flag="0"), formatC(cd15p20$V1, width=2, flag="0"), sep="/")
+
+# Ritchie Torres
+result2 <- cd15p20 %>% 
+  filter(grepl('Ritchie Torres', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(RT = V4) %>% 
+  right_join(ccd1417_ed)
+
+# Michael Blake
+result2 <- cd15p20 %>% 
+  filter(grepl('Michael A. Blake', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(MB = V4) %>% 
+  right_join(result2, by = "ed")
+
+# Ruben Diaz
+result2 <- cd15p20 %>% 
+  filter(grepl('Ruben Diaz', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(RD = V4) %>% 
+  right_join(result2, by = "ed")
+
+# Samelys Lopez
+result2 <- cd15p20 %>% 
+  filter(grepl('Samelys Lopez', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(SL = V4) %>% 
+  right_join(result2, by = "ed")
+
+# Ydanis Rodriguez
+result2 <- cd15p20 %>% 
+  filter(grepl('Ydanis Rodriguez', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(YR = V4) %>% 
+  right_join(result2, by = "ed")
+
+# Melissa Mark-Viverito
+result2 <- cd15p20 %>% 
+  filter(grepl('Melissa Mark-Viverito', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(MM = V4) %>% 
+  right_join(result2, by = "ed")
+
+# Tomas Ramos
+result2 <- cd15p20 %>% 
+  filter(grepl('Tomas Ramos', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(TR = V4) %>% 
+  right_join(result2, by = "ed")
+
+# Chivona R. Newsome
+result2 <- cd15p20 %>% 
+  filter(grepl('Chivona R. Newsome', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(CN = V4) %>% 
+  right_join(result2, by = "ed")
+
+write.csv(result2, "result2.csv")
+```
+
+
+Congress district 13 2016 primary
+```{r}
+cd13p16 <- read.csv("cd13p16.csv", stringsAsFactors = FALSE, header = TRUE)
+cd13p16$ed <- paste(formatC(cd13p16$ED, width=3, flag="0"), formatC(cd13p16$AD, width=2, flag="0"), sep="/")
+
+# Adriano Espaillat
+result3 <- cd13p16 %>% 
+  filter(grepl('Adriano Espaillat', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(AE = Tally) %>% 
+  right_join(ccd1417_ed)
+
+# Keith L. T. Wright
+result3 <- cd13p16 %>% 
+  filter(grepl('Keith L. T. Wright', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(KW = Tally) %>% 
+  right_join(result3)
+
+# Clyde E. Williams
+result3 <- cd13p16 %>% 
+  filter(grepl('Clyde E. Williams', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(CW = Tally) %>% 
+  right_join(result3)
+
+# Adam Clayton Powell
+result3 <- cd13p16 %>% 
+  filter(grepl('Adam Clayton Powell', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(AP = Tally) %>% 
+  right_join(result3)
+
+# Guillermo Linares
+result3 <- cd13p16 %>% 
+  filter(grepl('Guillermo Linares', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(GL = Tally) %>% 
+  right_join(result3)
+
+# Suzan D. Johnson-Cook
+result3 <- cd13p16 %>% 
+  filter(grepl('Suzan D. Johnson-Cook', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(SC = Tally) %>% 
+  right_join(result3)
+
+write.csv(result3, "result3.csv")
+```
+
+
+Assembly district 78 2016 primary
+```{r}
+ad78p16 <- read.csv("ad78p16.csv", stringsAsFactors = FALSE, header = TRUE)
+ad78p16$ed <- paste(formatC(ad78p16$ED, width=3, flag="0"), formatC(ad78p16$AD, width=2, flag="0"), sep="/")
+
+# Jose Rivera
+result4 <- ad78p16 %>% 
+  filter(grepl('Jose Rivera', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(JR = Tally) %>% 
+  right_join(ccd1417_ed, by = "ed")
+
+# Ischia J. Bravo
+result4 <- ad78p16 %>% 
+  filter(grepl('Ischia J. Bravo', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(IB = Tally) %>% 
+  right_join(result4, by = "ed")
+
+write.csv(result4, "result4.csv")
+```
+
+
+Assembly district 86 2016 primary
+```{r}
+ad86p16 <- read.csv("ad86p16.csv", stringsAsFactors = FALSE, header = TRUE)
+ad86p16$ed <- paste(formatC(ad86p16$ED, width=3, flag="0"), formatC(ad86p16$AD, width=2, flag="0"), sep="/")
+
+# Victor M. Pichardo
+result5 <- ad86p16 %>% 
+  filter(grepl('Victor M. Pichardo', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(VP = Tally) %>% 
+  right_join(ccd1417_ed, by = "ed")
+
+# Hector R. Ramirez
+result5 <- ad86p16 %>% 
+  filter(grepl('Hector R. Ramirez', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(HR = Tally) %>% 
+  right_join(result5, by = "ed")
+
+write.csv(result5, "result5.csv")
+```
+
+
+Assembly district 86 2014 primary
+```{r}
+ad86p14 <- read.csv("ad86p14.csv", stringsAsFactors = FALSE, header = TRUE)
+ad86p14$ed <- paste(formatC(ad86p14$ED, width=3, flag="0"), formatC(ad86p14$AD, width=2, flag="0"), sep="/")
+
+# Victor M. Pichardo
+result6 <- ad86p14 %>% 
+  filter(grepl('Victor M. Pichardo', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(VP = Tally) %>% 
+  right_join(ccd1417_ed, by = "ed")
+
+# Hector R. Ramirez
+result6 <- ad86p14 %>% 
+  filter(grepl('Hector R. Ramirez', Unit.Name)) %>% 
+  select(Tally, ed) %>% 
+  rename(HR = Tally) %>% 
+  right_join(result6, by = "ed")
+
+write.csv(result6, "result6.csv")
+```
+
+
+Assembly district 81 2020 primary
+```{r}
+ad81p20 <- read.csv("ad81p20.csv", stringsAsFactors = FALSE, header = FALSE)
+ad81p20$ed <- paste(formatC(ad81p20$V2, width=3, flag="0"), formatC(ad81p20$V1, width=2, flag="0"), sep="/")
+
+# George Diaz
+result7 <- ad81p20 %>% 
+  filter(grepl('George Diaz', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(GD = V4) %>% 
+  right_join(ccd1417_ed, by = "ed")
+
+# Jeffrey Dinowitz
+result7 <- ad81p20 %>% 
+  filter(grepl('Jeffrey Dinowitz', V3)) %>% 
+  select(V4, ed) %>% 
+  rename(JD = V4) %>% 
+  right_join(result7, by = "ed")
+
+write.csv(result7, "result7.csv")
+```
+

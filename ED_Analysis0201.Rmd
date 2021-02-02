@@ -1,0 +1,135 @@
+---
+title: "ED0201"
+author: "YingtongZhou"
+date: "2/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+library(tidyverse)
+```
+
+
+Load ccd14 EDs & 2018 Governor Primary
+```{r}
+ccd14 <- read.delim("ccd14.txt", header = TRUE, stringsAsFactors = FALSE)
+g18p <- read.csv("g18p.csv", header = FALSE, stringsAsFactors = FALSE)
+g18p$ed <- paste(formatC(g18p$V2, width=3, flag="0"), formatC(g18p$V1, width=2, flag="0"), sep="/")
+
+# Cynthia E. Nixon
+gov18 <- g18p%>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Cynthia E. Nixon") %>% 
+  select(-V3) %>% 
+  rename(CN = V4) %>% 
+  right_join(ccd14, by = "ed")
+
+# Andrew M. Cuomo
+gov18 <- g18p%>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Andrew M. Cuomo") %>% 
+  select(-V3) %>% 
+  rename(AC = V4) %>% 
+  right_join(gov18, by = "ed")
+
+write.csv(gov18, "gov18.csv")
+```
+
+
+Load 2018 Attorney General
+```{r}
+ag18p <- read.csv("ag18p.csv", header = FALSE, stringsAsFactors = FALSE)
+ag18p$ed <- paste(formatC(ag18p$V2, width=3, flag="0"), formatC(ag18p$V1, width=2, flag="0"), sep="/")
+
+# Sean Patrick Maloney
+ag18 <- ag18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Sean Patrick Maloney") %>% 
+  select(-V3) %>% 
+  rename(SM = V4) %>% 
+  right_join(ccd14, by = "ed")
+
+# Letitia A. James
+ag18 <- ag18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Letitia A. James") %>% 
+  select(-V3) %>% 
+  rename(LJ = V4) %>% 
+  right_join(ag18, by = "ed")
+
+# Leecia R. Eve
+ag18 <- ag18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Leecia R. Eve") %>% 
+  select(-V3) %>% 
+  rename(LE = V4) %>% 
+  right_join(ag18, by = "ed")
+
+# Zephyr Teachout
+ag18 <- ag18p %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Zephyr Teachout") %>% 
+  select(-V3) %>% 
+  rename(ZT = V4) %>% 
+  right_join(ag18, by = "ed")
+
+write.csv(ag18, "ag18.csv")
+```
+
+
+Load 2014 Governor
+```{r}
+g14p <- read.csv("g14p.csv", stringsAsFactors = FALSE)
+g14p$ed <- paste(formatC(g14p$ED, width=3, flag="0"), formatC(g14p$AD, width=2, flag="0"), sep="/")
+
+# Zephyr R. Teachout
+gov14 <- g14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Zephyr R. Teachout") %>% 
+  select(-Unit.Name) %>% 
+  rename(SM = Tally) %>% 
+  right_join(ccd14, by = "ed")
+
+# Andrew M. Cuomo	
+gov14 <- g14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Andrew M. Cuomo") %>% 
+  select(-Unit.Name) %>% 
+  rename(AC = Tally) %>% 
+  right_join(gov14, by = "ed")
+
+# Randy A. Credico
+gov14 <- g14p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Randy A. Credico") %>% 
+  select(-Unit.Name) %>% 
+  rename(RC = Tally) %>% 
+  right_join(gov14, by = "ed")
+
+write.csv(gov14, "gov14.csv")
+```
+
+
+Load 2019 Special Election - tidyverse::spread
+```{r}
+se19 <- read.csv("se19.csv", header = FALSE, stringsAsFactors = FALSE)
+se19$ed <- paste(formatC(se19$V2, width=3, flag="0"), formatC(se19$V1, width=2, flag="0"), sep="/")
+
+se_sp <- se19 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4) %>% 
+  right_join(ccd14, by = "ed")
+
+write.csv(se_sp, "se_sp.csv")
+```
+

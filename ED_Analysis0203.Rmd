@@ -1,0 +1,176 @@
+---
+title: "ED0201"
+author: "YingtongZhou"
+date: "2/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load 2017 Comptroller
+```{r}
+com17 <- read.csv("com17.csv", header = TRUE, stringsAsFactors = FALSE)
+com17$ed <- paste(formatC(com17$ED, width=3, flag="0"), formatC(com17$AD, width=2, flag="0"), sep="/")
+
+com17_re <- com17 %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Scott M. Stringer', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(SS = sum(Tally))
+
+com17_re <- com17 %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Michel J. Faulkner', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(MF = sum(Tally)) %>% 
+  right_join(com17_re, by = "ed")
+
+com17_re <- com17 %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Julia A. Willebrand', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(JW = sum(Tally)) %>% 
+  right_join(com17_re, by = "ed")
+
+com17_re <- com17 %>% 
+  select(-AD, -ED) %>% 
+  filter(grepl('Alex Merced', Unit.Name)) %>% 
+  group_by(ed) %>% 
+  summarise(AM = sum(Tally)) %>% 
+  right_join(com17_re, by = "ed")
+write.csv(com17_re, "com17_re.csv")
+```
+
+
+Load all EDs and neighborhoods
+```{r}
+ednb <- read.delim("ednb.txt", header = TRUE, stringsAsFactors = FALSE)
+ednb$EDs <- paste(formatC(as.integer(sub("/.*", "", ednb$EDs)), width=3, flag="0"), str_sub(ednb$EDs, -2,-1),  sep = '/')
+com17_re2 <- left_join(ednb, com17_re, by = c("EDs" = "ed"))
+write.csv(com17_re2, "com17_re2.csv")
+```
+
+
+Load Assembly 72 General
+```{r}
+a72g18 <- read.csv("a7218.csv", header = FALSE, stringsAsFactors = FALSE)
+a72g18$ed <- paste(formatC(a72g18$V2, width=3, flag="0"), formatC(a72g18$V1, width=2, flag="0"), sep="/")
+
+# Carmen N. De La Rosa (Democratic)
+a72g18_re <- a72g18 %>% 
+  select(-V1, -V2) %>% 
+  filter(grepl("Carmen N. De La Rosa", V3)) %>% 
+  group_by(ed) %>% 
+  summarise(CR = sum(V4)) %>% 
+  right_join(ednb, by = c("ed" = "EDs"))
+
+# Ronny Goodman (Republican)
+a72g18_re <- a72g18 %>% 
+  select(-V1, -V2) %>% 
+  filter(grepl("Ronny Goodman", V3)) %>% 
+  group_by(ed) %>% 
+  summarise(RG = sum(V4)) %>% 
+  right_join(a72g18_re, by = "ed")
+
+# Carmen N. De La Rosa (Working Families)
+a72g18_re <- a72g18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Carmen N. De La Rosa (Working Families)") %>% 
+  select(-V3) %>% 
+  rename(RG = V4) %>% 
+  right_join(a72g18_re, by = "ed")
+
+write.csv(a72g18_re, "a72g18_re.csv")
+```
+
+
+Load AD72 Primary 2018
+```{r}
+ad72p18 <- read.csv("ad72p18.csv", header = FALSE, stringsAsFactors = FALSE)
+ad72p18$ed <- paste(formatC(ad72p18$V2, width=3, flag="0"), formatC(ad72p18$V1, width=2, flag="0"), sep="/")
+
+# Yomaris M. Smith
+ad72p18_re <- ad72p18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Yomaris M. Smith") %>% 
+  select(-V3) %>% 
+  rename(YS = V4) %>% 
+  right_join(ednb, by = c("ed" = "EDs"))
+
+# Sosa A. Jimenez	
+ad72p18_re <- ad72p18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Sosa A. Jimenez") %>% 
+  select(-V3) %>% 
+  rename(Sosa = V4) %>% 
+  right_join(ad72p18_re, by = "ed")
+
+# Carmen N. De La Rosa	
+ad72p18_re <- ad72p18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Carmen N. De La Rosa") %>% 
+  select(-V3) %>% 
+  rename(CR = V4) %>% 
+  right_join(ad72p18_re, by = "ed")
+
+write.csv(ad72p18_re, "ad72p18_re.csv")
+```
+
+
+Load AD72 Primary 2016
+```{r}
+ad72p16 <- read.csv("ad72p16.csv", header = TRUE, stringsAsFactors = FALSE)
+ad72p16$ed <- paste(formatC(ad72p16$ED, width=3, flag="0"), formatC(ad72p16$AD, width=2, flag="0"), sep="/")
+
+# George Fernandez - YS
+ad72p16_re <- ad72p16 %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "George Fernandez") %>% 
+  select(-Unit.Name) %>% 
+  rename(YS = Tally) %>% 
+  right_join(ednb, by = c("ed" = "EDs"))
+
+# Guillermo Linares
+ad72p16_re <- ad72p16 %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Guillermo Linares") %>% 
+  select(-Unit.Name) %>% 
+  rename(GL = Tally) %>% 
+  right_join(ad72p16_re, by = "ed")
+
+# Carmen N. De La Rosa
+ad72p16_re <- ad72p16 %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Carmen N. De La Rosa") %>% 
+  select(-Unit.Name) %>% 
+  rename(CR = Tally) %>% 
+  right_join(ad72p16_re, by = "ed")
+
+write.csv(ad72p16_re, "ad72p16_re.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

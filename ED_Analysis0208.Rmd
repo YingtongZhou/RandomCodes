@@ -1,0 +1,132 @@
+---
+title: "ED_Analysis0208"
+author: "YingtongZhou"
+date: "2/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load NYC all EDs & 2018 Democratic Attorney General Citywide
+```{r}
+nyced <- read.delim("nyc_ed.txt", header = TRUE, stringsAsFactors = FALSE)
+nyced <- nyced %>% 
+  select(ed)
+nyced$ed <- paste(formatC(as.integer(sub("/.*", "", nyced$ed)), width=3, flag="0"),
+                 str_sub(nyced$ed, -2,-1), sep = "/")
+
+ag18 <- read.csv("DemocraticAttorneyGeneralCitywide18.csv", header = FALSE, stringsAsFactors = FALSE)
+ag18$ed <- paste(formatC(ag18$V2, width=3, flag="0"), formatC(ag18$V1, width=2, flag="0"), sep="/")
+ag18re <- ag18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Sean Patrick Maloney") %>% 
+  select(-V3) %>% 
+  rename(SM = V4) %>% 
+  right_join(nyced, by = "ed")
+
+ag18re <- ag18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Letitia A. James") %>% 
+  select(-V3) %>% 
+  rename(LJ = V4) %>% 
+  right_join(ag18re, by = "ed")
+
+ag18re <- ag18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Leecia R. Eve") %>% 
+  select(-V3) %>% 
+  rename(LE = V4) %>% 
+  right_join(ag18re, by = "ed")
+
+ag18re <- ag18 %>% 
+  select(-V1, -V2) %>% 
+  filter(V3 == "Zephyr Teachout") %>% 
+  select(-V3) %>% 
+  rename(ZT = V4) %>% 
+  right_join(ag18re, by = "ed")
+
+write.csv(ag18re, "DemocraticAttorneyGeneralCitywide18_re.csv")
+```
+
+
+Load Democratic State Senator 23
+```{r}
+ss23 <- read.csv("DemocraticStateSenator23p.csv", header = FALSE, stringsAsFactors = FALSE)
+ss23$ed <- paste(formatC(ss23$V2, width=3, flag="0"), formatC(ss23$V1, width=2, flag="0"), sep="/")
+ss23ed <- ss23 %>% 
+  distinct(ed)
+```
+
+
+Load PRESIDENTIAL PRIMARY - 2016
+```{r}
+pre16p <- read.csv("DemocraticPresidentCitywide16p.csv", header = TRUE, stringsAsFactors = FALSE)
+pre16p$ed <- paste(formatC(pre16p$ED, width=3, flag="0"), formatC(pre16p$AD, width=2, flag="0"), sep="/")
+
+pre16p_re <- pre16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Bernie Sanders") %>% 
+  select(-Unit.Name) %>% 
+  rename(BS = Tally) %>% 
+  right_join(nyced, by = "ed")
+
+pre16p_re <- pre16p %>% 
+  select(-AD, -ED) %>% 
+  filter(Unit.Name == "Hillary Clinton") %>% 
+  select(-Unit.Name) %>% 
+  rename(HC = Tally) %>% 
+  right_join(pre16p_re, by = "ed")
+
+write.csv(pre16p_re, "DemocraticPresidentCitywide16p_re.csv")
+```
+
+
+Load neighborhoods
+```{r}
+nycnbh <- read.delim("nyc_ed.txt", header = TRUE, stringsAsFactors = FALSE)
+nycnbh <- nycnbh %>% 
+  select(nbh)
+
+nbhd <- nycnbh %>% 
+  distinct(nbh)
+
+nbhct <- nycnbh %>% 
+  group_by(nbh) %>% 
+  summarise(ct = n())
+```
+
+
+Load EA Copy
+```{r}
+eric <- read.csv("Eric.csv", header = TRUE, stringsAsFactors = FALSE)[-1, ]
+eric[is.na(eric)] <- 0
+
+eric$Total <- eric$X2020.Presidential.Biden + eric$X2020.Presidential.Trump
+eric$Total.2016.Presidential <- eric$X2016.Presidential.Clinton + eric$X2016.Presidential.Trump
+
+prsdntnb <- aggregate(list(Biden20 = eric$X2020.Presidential.Biden, 
+                        Trump20 = eric$X2020.Presidential.Trump, 
+                        Pre20 = eric$Total,
+                        Clinton16 = eric$X2016.Presidential.Clinton,
+                        Trump16 = eric$X2016.Presidential.Trump,
+                        Pre16 = eric$Total.2016.Presidential), 
+                   by = list(Neighborhood = eric$Neighborhood), sum)
+prsdntnb$Biden20. <- round(prsdntnb$Biden20 / prsdntnb$Pre20, 4)
+prsdntnb$Trump20. <- round(prsdntnb$Trump20 / prsdntnb$Pre20, 4)
+prsdntnb$Clinton16. <- round(prsdntnb$Clinton16 / prsdntnb$Pre16, 4)
+prsdntnb$Trump16. <- round(prsdntnb$Trump16 / prsdntnb$Pre16, 4)
+
+write.csv(prsdntnb, "President16_20.csv")
+```

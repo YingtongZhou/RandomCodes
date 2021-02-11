@@ -1,0 +1,95 @@
+---
+title: "EDA0210"
+author: "YingtongZhou"
+date: "2/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load Rivera EDs & cd13p14
+```{r}
+library(tidyverse)
+ccd14 <- read.delim("rivera.txt", header = T)
+cd13p14 <- read.csv("CongressDis13p14.csv", stringsAsFactors = F)
+cd13p14$ed <- paste(formatC(cd13p14$ED, width=3, flag="0"), formatC(cd13p14$AD, width=2, flag="0"), sep="/")
+cd13p14_re <- cd13p14 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd14)
+write.csv(cd13p14_re, "CongressDis13p14_re.csv")
+```
+
+
+Load ccd14 p2017
+```{r}
+ccd14p17 <- read.csv("ccd14p17.csv", stringsAsFactors = F)
+ccd14p17$ed <- paste(formatC(ccd14p17$ED, width=3, flag="0"), formatC(ccd14p17$AD, width=2, flag="0"), sep="/")
+ccd14p17_re <- ccd14p17 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd14)
+write.csv(ccd14p17_re, "ccd14p17_re.csv")
+```
+
+
+Load EA Copy
+```{r}
+eric <- read.csv("Eric.csv", header = TRUE, stringsAsFactors = FALSE)[-1, ]
+eric[is.na(eric)] <- 0
+
+nbh_tab <- aggregate(list(blasio = eric$X2017.Mayoral.Primary,
+                          sal = eric$X2017.Mayoral.Primary.1,
+                          tolkin = eric$X2017.Mayoral.Primary.2,
+                          bashner = eric$X2017.Mayoral.Primary.3,
+                          gangi = eric$X2017.Mayoral.Primary.4,
+                          cuomo18 = eric$X2018.Governor.Primary,
+                          nixon = eric$X2018.Governor.Primary.1,
+                          cuomo14 = eric$X2014.Governor.Primary,
+                          credico = eric$X2014.Governor.Primary.1,
+                          teachout = eric$X2014.Governor.Primary.2,
+                          meeks14 = eric$Democratic.primary.for.U.S..House.New.York.District.5..2014,
+                          marthone = eric$Democratic.primary.for.U.S..House.New.York.District.5..2014.1,
+                          mirza = eric$Democratic.primary.for.U.S..House.New.York.District.5..2016,
+                          meeks16 = eric$Democratic.primary.for.U.S..House.New.York.District.5..2016.1,
+                          achille = eric$Democratic.primary.for.U.S..House.New.York.District.5..2018,
+                          meeks18 = eric$Democratic.primary.for.U.S..House.New.York.District.5..2018.1,
+                          mizan = eric$Democratic.primary.for.U.S..House.New.York.District.5..2018.2,
+                          meeks20 = eric$Democratic.primary.for.U.S..House.New.York.District.5..2020,
+                          chowd = eric$Democratic.primary.for.U.S..House.New.York.District.5..2020.1,
+                          espaillat14 = eric$U.S..House..New.York.District.13.Democratic.Primary...2014,
+                          rangel = eric$U.S..House..New.York.District.13.Democratic.Primary...2014.1,
+                          walrond = eric$U.S..House..New.York.District.13.Democratic.Primary...2014.2,
+                          garcia = eric$U.S..House..New.York.District.13.Democratic.Primary...2014.3,
+                          teachout18 = eric$Democratic.Attorney.General.Primary...2018,
+                          eve = eric$X.30,
+                          james = eric$X.32,
+                          maloney = eric$X.34,
+                          david17 = eric$Democratic.Public.Advocate.Citywide...2017,
+                          james17 = eric$Democratic.Public.Advocate.Citywide...2017.1,
+                          hochul14 = eric$Democratic.Lieutenant.Governor.Primary...2014,
+                          wu = eric$Democratic.Lieutenant.Governor.Primary...2014.1,
+                          jw18 = eric$Democratic.Lieutenant.Governor.Primary...2018,
+                          hochul19 = eric$Democratic.Lieutenant.Governor.Primary...2018.1,
+                          sanders = eric$PRESIDENTIAL.PRIMARY...2020.2,
+                          warren = eric$PRESIDENTIAL.PRIMARY...2020.4,
+                          bidenp20 = eric$PRESIDENTIAL.PRIMARY...2020.5,
+                          clinton = eric$PRESIDENTIAL.PRIMARY...2016,
+                          sanders16 = eric$X.56,
+                          tReg = eric$Total.Reg), 
+                   by = list(Neighborhood = eric$Neighborhood), sum)
+
+
+write.csv(prsdntnb, "President16_20.csv")
+```

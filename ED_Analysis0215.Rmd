@@ -1,0 +1,176 @@
+---
+title: "EDA0215"
+author: "YingtongZhou"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/QMSS - CU/JobHunting/ElevationStrategies")
+```
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+```
+
+
+Load Avi EDs & ad24p20
+```{r}
+library(tidyverse)
+ccd29 <- read.delim("ccd29.txt", header = T)
+ccd29$ed <- paste(formatC(as.integer(sub("/.*", "", ccd29$ed)), width=3, flag="0"),
+                 str_sub(ccd29$ed, -2,-1), sep = "/")
+ad24p20 <- read.csv("ad24p20.csv", stringsAsFactors = F, header = F)
+ad24p20$ed <- paste(formatC(ad24p20$V2, width=3, flag="0"), formatC(ad24p20$V1, width=2, flag="0"), sep="/")
+ad24p20_re <- ad24p20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4) %>% 
+  right_join(ccd29)
+write.csv(ad24p20_re, "ad24p20_re.csv")
+```
+
+
+Load ss10p16
+```{r}
+ss10p16 <- read.csv("ss10p16.csv", stringsAsFactors = F)
+ss10p16$ed <- paste(formatC(ss10p16$ED, width=3, flag="0"), formatC(ss10p16$AD, width=2, flag="0"), sep="/")
+ss10p16_re <- ss10p16 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd29)
+write.csv(ss10p16_re, "ss10p16_re.csv")
+```
+
+
+Load ss16p16
+```{r}
+ss16p16 <- read.csv("ss16p16.csv", stringsAsFactors = F)
+ss16p16$ed <- paste(formatC(ss16p16$ED, width=3, flag="0"), formatC(ss16p16$AD, width=2, flag="0"), sep="/")
+ss16p16_re <- ss16p16 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd29)
+write.csv(ss16p16_re, "ss16p16_re.csv")
+```
+
+
+Load ss16p14
+```{r}
+ss16p14 <- read.csv("ss16p14.csv", stringsAsFactors = F)
+ss16p14$ed <- paste(formatC(ss16p14$ED, width=3, flag="0"), formatC(ss16p14$AD, width=2, flag="0"), sep="/")
+ss16p14_re <- ss16p14 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd29)
+write.csv(ss16p14_re, "ss16p14_re.csv")
+```
+
+
+Load ss14p14
+```{r}
+ss14p14 <- read.csv("ss14p14.csv", stringsAsFactors = F)
+ss14p14$ed <- paste(formatC(ss14p14$ED, width=3, flag="0"), formatC(ss14p14$AD, width=2, flag="0"), sep="/")
+ss14p14_re <- ss14p14 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd29)
+write.csv(ss14p14_re, "ss14p14_re.csv")
+```
+
+
+Load DemocraticAttorneyGeneralCitywide18
+```{r}
+ag18 <- read.csv("DemocraticAttorneyGeneralCitywide18.csv", stringsAsFactors = F, header = F)
+ag18$ed <- paste(formatC(ag18$V2, width=3, flag="0"), formatC(ag18$V1, width=2, flag="0"), sep="/")
+ag18_re <- ag18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4) %>% 
+  right_join(ccd29)
+write.csv(ag18_re, "ag18_re.csv")
+```
+
+
+Load DemocraticGovernorCitywide14p
+```{r}
+gov14 <- read.csv("DemocraticGovernorCitywide14p.csv", stringsAsFactors = F)
+gov14$ed <- paste(formatC(gov14$ED, width=3, flag="0"), formatC(gov14$AD, width=2, flag="0"), sep="/")
+gov14_re <- gov14 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd29)
+write.csv(gov14_re, "gov14_re.csv")
+```
+
+
+Load DemocraticGovernorCitywide18p
+```{r}
+gov18 <- read.csv("DemocraticGovernorCitywide18p.csv", stringsAsFactors = F, header = F)
+gov18$ed <- paste(formatC(gov18$V2, width=3, flag="0"), formatC(gov18$V1, width=2, flag="0"), sep="/")
+gov18_re <- gov18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4) %>% 
+  right_join(ccd29)
+write.csv(gov18_re, "gov18_re.csv")
+```
+
+
+Load 2019 Special Election
+```{r}
+PAS <- read.csv("PAS.csv", stringsAsFactors = F, header = F)
+PAS$ed <- paste(formatC(PAS$V2, width=3, flag="0"), formatC(PAS$V1, width=2, flag="0"), sep="/")
+PAS_re <- PAS %>% 
+  select(-V1, -V2, -V5, -V6, -V7) %>% 
+  spread(V3, V4) %>% 
+  right_join(ccd29)
+write.csv(PAS_re, "PAS_re.csv")
+```
+
+
+Load Lieutenant 2018
+```{r}
+l18 <- read.csv("Lieutenant18p.csv", stringsAsFactors = F, header = F)
+l18$ed <- paste(formatC(l18$V2, width=3, flag="0"), formatC(l18$V1, width=2, flag="0"), sep="/")
+l18_re <- l18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4) %>% 
+  right_join(ccd29)
+write.csv(l18_re, "l18_re.csv")
+```
+
+
+Load Lieutenant 2014
+```{r}
+l14 <- read.csv("Lieutenant14p.csv", stringsAsFactors = F)
+l14$ed <- paste(formatC(l14$ED, width=3, flag="0"), formatC(l14$AD, width=2, flag="0"), sep="/")
+l14_re <- l14 %>% 
+  select(-AD, -ED) %>% 
+  spread(Unit.Name, Tally) %>% 
+  right_join(ccd29)
+write.csv(l14_re, "l14_re.csv")
+```
+
+
+Load pre20 for Absentee
+```{r}
+pre20 <- read.csv("pre20.csv", stringsAsFactors = F, header = F)
+pre20$ed <- paste(formatC(pre20$V2, width=3, flag="0"), formatC(pre20$V1, width=2, flag="0"), sep="/")
+pre20_ab <- pre20 %>% 
+  filter(V3 == "Absentee / Military") %>% 
+  right_join(ccd29, by = "ed")
+write.csv(pre20_ab, "pre20_ab.csv")
+```
+
+
+Load pre16 for Absentee
+```{r}
+pre16 <- read.csv("pre16.csv", stringsAsFactors = F)
+pre16$ed <- paste(formatC(pre16$ED, width=3, flag="0"), formatC(pre16$AD, width=2, flag="0"), sep="/")
+pre16_ab <- pre16 %>% 
+  filter(Unit.Name == "Absentee / Military") %>% 
+  right_join(ccd29, by = "ed")
+write.csv(pre16_ab, "pre16_ab.csv")
+```

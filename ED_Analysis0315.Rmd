@@ -1,0 +1,106 @@
+---
+title: "ED_Analysis0315"
+author: "YingtongZhou"
+date: "3/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load Packages
+```{r}
+library(dplyr)
+library(stringr)
+library(readxl)
+library(tidyverse)
+```
+
+
+Load all nyc eds
+```{r}
+nyced <- read.delim("nyc_ed.txt", header = T)
+nyced <- nyced %>% 
+  select(ed)
+nyced$ed <- paste(formatC(as.integer(sub("/.*", "", nyced$ed)), width=3, flag="0"),
+                 str_sub(nyced$ed, -2,-1), sep = "/")
+
+pas <- read.csv("PAS.csv", header = F)
+pas <- pas %>% 
+  # select(-V5, -V6, -V7) %>% 
+  spread(V3, V4)
+
+pas$ed <- paste(formatC(as.integer(pas$V2), width=3, flag="0"),
+                 as.integer(pas$V1), sep = "/")
+
+pas <- pas %>% 
+  select(-V1, -V2)
+pj <- pas %>% 
+  right_join(nyced, by = "ed")
+
+write.csv(pj, "PublicAdSpecial2019.csv")
+```
+
+
+CD 14 2018 & 2020
+```{r}
+cd14p18 <- read.csv("cd14p18.csv", header = F)
+cd14p18$ed <- paste(formatC(as.integer(cd14p18$V2), width=3, flag="0"),
+                 as.integer(cd14p18$V1), sep = "/")
+cd14p18 <- cd14p18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+
+cd14p18t <- cd14p18 %>% 
+  select(ed, `Alexandria Ocasio-Cortez`, `Joseph Crowley`)
+
+cd14p18t$nt <- cd14p18t$`Alexandria Ocasio-Cortez` + cd14p18t$`Joseph Crowley`
+
+cd14p18t <- cd14p18t %>% 
+  select(ed, nt)
+
+cd14p20 <- read.csv("cd14p20.csv", header = F)
+cd14p20$ed <- paste(formatC(as.integer(cd14p20$V2), width=3, flag="0"),
+                 as.integer(cd14p20$V1), sep = "/")
+cd14p20 <- cd14p20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+
+cd14p20t <- cd14p20 %>% 
+  select(ed, `Alexandria Ocasio-Cortez`, `Badrun N. Khan`, `Michelle Caruso-Cabrera`)
+
+cd14p20t$nt2 <- cd14p20t$`Alexandria Ocasio-Cortez` + cd14p20t$`Badrun N. Khan` + cd14p20t$`Michelle Caruso-Cabrera`
+
+cd14p20t <- cd14p20t %>% 
+  select(ed, nt2) %>% 
+  right_join(cd14p18t, by = "ed")
+
+cd14p20t$diff <- cd14p20t$nt2 - cd14p20t$nt
+
+cd14p20d18 <- right_join(cd14p20t, nyced, by = "ed")
+
+write.csv(cd14p20d18, "cd14p20d18.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

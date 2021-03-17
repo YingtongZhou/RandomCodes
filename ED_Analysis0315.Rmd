@@ -44,44 +44,462 @@ write.csv(pj, "PublicAdSpecial2019.csv")
 ```
 
 
-CD 14 2018 & 2020
+Load ED and PAS turnout
 ```{r}
-cd14p18 <- read.csv("cd14p18.csv", header = F)
-cd14p18$ed <- paste(formatC(as.integer(cd14p18$V2), width=3, flag="0"),
-                 as.integer(cd14p18$V1), sep = "/")
-cd14p18 <- cd14p18 %>% 
+edto <- read.delim("edto.txt", header = T)
+nyced <- nyced %>% 
+  select(ed)
+nyced$ed <- paste(formatC(as.integer(sub("/.*", "", nyced$ed)), width=3, flag="0"),
+                 str_sub(nyced$ed, -2,-1), sep = "/")
+
+```
+
+
+CD 5 2018 & 2020
+```{r}
+cd5gen18 <- read.csv("cd5gen18.csv", header = F)
+cd5gen18$ed <- paste(formatC(as.integer(cd5gen18$V2), width=3, flag="0"),
+                 as.integer(cd5gen18$V1), sep = "/")
+cd5gen18t <- cd5gen18 %>% 
   select(-V1, -V2) %>% 
   spread(V3, V4)
+cd5gen18t[is.na(cd5gen18t)] <- 0
+cd5gen18t <- cd5gen18t %>% 
+  mutate(t518 = `Gregory W. Meeks (Democratic)` + Scattered) %>% 
+  select(ed, t518)
 
-cd14p18t <- cd14p18 %>% 
-  select(ed, `Alexandria Ocasio-Cortez`, `Joseph Crowley`)
-
-cd14p18t$nt <- cd14p18t$`Alexandria Ocasio-Cortez` + cd14p18t$`Joseph Crowley`
-
-cd14p18t <- cd14p18t %>% 
-  select(ed, nt)
-
-cd14p20 <- read.csv("cd14p20.csv", header = F)
-cd14p20$ed <- paste(formatC(as.integer(cd14p20$V2), width=3, flag="0"),
-                 as.integer(cd14p20$V1), sep = "/")
-cd14p20 <- cd14p20 %>% 
+cd5gen20 <- read.csv("cd5gen20.csv", header = F)
+cd5gen20$ed <- paste(formatC(as.integer(cd5gen20$V2), width=3, flag="0"),
+                 as.integer(cd5gen20$V1), sep = "/")
+cd5gen20t <- cd5gen20 %>% 
   select(-V1, -V2) %>% 
   spread(V3, V4)
+cd5gen20t[is.na(cd5gen20t)] <- 0
+cd5diff <- cd5gen20t %>% 
+  mutate(t520 = `Gregory W. Meeks (Democratic)` + Scattered) %>% 
+  select(ed, t520) %>% 
+  right_join(cd5gen18t, by = "ed") %>% 
+  mutate(diff = t520-t518) %>% 
+  select(ed, diff)
 
-cd14p20t <- cd14p20 %>% 
-  select(ed, `Alexandria Ocasio-Cortez`, `Badrun N. Khan`, `Michelle Caruso-Cabrera`)
+# cd14p20t$diff <- cd14p20t$nt2 - cd14p20t$nt
+# 
+# cd14p20d18 <- right_join(cd14p20t, nyced, by = "ed")
+# 
+# write.csv(cd14p20d18, "cd14p20d18.csv")
+```
 
-cd14p20t$nt2 <- cd14p20t$`Alexandria Ocasio-Cortez` + cd14p20t$`Badrun N. Khan` + cd14p20t$`Michelle Caruso-Cabrera`
 
-cd14p20t <- cd14p20t %>% 
-  select(ed, nt2) %>% 
-  right_join(cd14p18t, by = "ed")
+CD 6 2018 & 2020
+```{r}
+cd6gen18 <- read.csv("cd6gen18.csv", header = F)
+cd6gen18$ed <- paste(formatC(as.integer(cd6gen18$V2), width=3, flag="0"),
+                 as.integer(cd6gen18$V1), sep = "/")
+cd6gen18t <- cd6gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd6gen18t[is.na(cd6gen18t)] <- 0
+cd6gen18t <- cd6gen18t %>% 
+  mutate(t618 = `Grace Meng (Democratic)` + 
+           `Grace Meng (Reform)` + 
+           `Grace Meng (Working Families)` + 
+           `Thomas J. Hillgardner (Green)` + 
+           Scattered) %>% 
+  select(ed, t618)
 
-cd14p20t$diff <- cd14p20t$nt2 - cd14p20t$nt
+cd6gen20 <- read.csv("cd6gen20.csv", header = F)
+cd6gen20$ed <- paste(formatC(as.integer(cd6gen20$V2), width=3, flag="0"),
+                 as.integer(cd6gen20$V1), sep = "/")
+cd6gen20t <- cd6gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd6gen20t[is.na(cd6gen20t)] <- 0
+cd6diff <- cd6gen20t %>% 
+  mutate(t620 = `Grace Meng (Democratic)` + 
+           `Grace Meng (Working Families)` + 
+           `Thomas J. Zmich (Republican)` + 
+           `Thomas J. Zmich (Libertarian)` + 
+           `Thomas J. Zmich (Conservative)` +
+           `Thomas J. Zmich (Save Our City)` + 
+           Scattered) %>% 
+  select(ed, t620) %>% 
+  right_join(cd6gen18t, by = "ed") %>% 
+  mutate(diff = t620-t618) %>% 
+  select(ed, diff)
+```
 
-cd14p20d18 <- right_join(cd14p20t, nyced, by = "ed")
 
-write.csv(cd14p20d18, "cd14p20d18.csv")
+CD 7 2018 & 2020
+```{r}
+cd7gen18 <- read.csv("cd7gen18.csv", header = F)
+cd7gen18$ed <- paste(formatC(as.integer(cd7gen18$V2), width=3, flag="0"),
+                 as.integer(cd7gen18$V1), sep = "/")
+cd7gen18t <- cd7gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd7gen18t[is.na(cd7gen18t)] <- 0
+cd7gen18t <- cd7gen18t %>% 
+  mutate(t718 = `Jeffrey M. Kurzon (Reform)` + 
+           `Joseph Lieberman (Conservative)` + 
+           `Nydia M. Velazquez (Democratic)` + 
+           `Nydia M. Velazquez (Working Families)` + 
+           Scattered) %>% 
+  select(ed, t718)
+
+cd7gen20 <- read.csv("cd7gen20.csv", header = F, stringsAsFactors = F)
+cd7gen20$ed <- paste(formatC(as.integer(cd7gen20$V2), width=3, flag="0"),
+                 as.integer(cd7gen20$V1), sep = "/")
+cd7gen20t <- cd7gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd7gen20t[is.na(cd7gen20t)] <- 0
+cd7diff <- cd7gen20t %>% 
+  mutate(t720 = as.numeric(`Brian W. Kelly (Conservative)`) + 
+           as.numeric(`Brian W. Kelly (Republican)`) + 
+           as.numeric(`Gilbert Midonnet (Libertarian)`) + 
+           as.numeric(`Nydia M. Velazquez (Democratic)`) + 
+           as.numeric(`Nydia M. Velazquez (Working Families)`) + as.numeric(Scattered)) %>% 
+  select(ed, t720) %>% 
+  right_join(cd7gen18t, by = "ed") %>% 
+  mutate(diff = t720-t718) %>% 
+  select(ed, diff)
+```
+
+
+CD 8 2018 & 2020
+```{r}
+cd8gen18 <- read.csv("cd8gen18.csv", header = F, stringsAsFactors = F)
+cd8gen18$ed <- paste(formatC(as.integer(cd8gen18$V2), width=3, flag="0"),
+                 as.integer(cd8gen18$V1), sep = "/")
+cd8gen18t <- cd8gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd8gen18t[is.na(cd8gen18t)] <- 0
+cd8gen18t <- cd8gen18t %>% 
+  mutate(t818 = as.numeric(`Ernest C. Johnson (Conservative)`) + 
+           as.numeric(`Hakeem S. Jeffries (Democratic)`) + 
+           as.numeric(`Hakeem S. Jeffries (Working Families)`) + 
+           as.numeric(`Jessica L. White (Reform)`) + as.numeric(Scattered)) %>% 
+  select(ed, t818)
+
+cd8gen20 <- read.csv("cd8gen20.csv", header = F, stringsAsFactors = F)
+cd8gen20$ed <- paste(formatC(as.integer(cd8gen20$V2), width=3, flag="0"),
+                 as.integer(cd8gen20$V1), sep = "/")
+cd8gen20t <- cd8gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd8gen20t[is.na(cd8gen20t)] <- 0
+cd8diff <- cd8gen20t %>% 
+  mutate(t820 = as.numeric(`Garfield H. Wallace (Conservative)`) + 
+           as.numeric(`Garfield H. Wallace (Republican)`) + 
+           as.numeric(`Hakeem S. Jeffries (Democratic)`) + 
+           as.numeric(`Hakeem S. Jeffries (Working Families)`) +  
+           as.numeric(Scattered)) %>% 
+  select(ed, t820) %>% 
+  right_join(cd8gen18t, by = "ed") %>% 
+  mutate(diff = t820-t818) %>% 
+  select(ed, diff)
+```
+
+
+CD 9 2018 & 2020
+```{r}
+cd9gen18 <- read.csv("cd9gen18.csv", header = F, stringsAsFactors = F)
+cd9gen18$ed <- paste(formatC(as.integer(cd9gen18$V2), width=3, flag="0"),
+                 as.integer(cd9gen18$V1), sep = "/")
+cd9gen18t <- cd9gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd9gen18t[is.na(cd9gen18t)] <- 0
+cd9gen18t <- cd9gen18t %>% 
+  mutate(t918 = as.numeric(`Joel Anabilah-Azumah (Reform)`) + 
+           as.numeric(`Lutchi Gayot (Conservative)`) + 
+           as.numeric(`Lutchi Gayot (Republican)`) + 
+           as.numeric(`Yvette D. Clarke (Democratic)`) + 
+           as.numeric(`Yvette D. Clarke (Working Families)`) + as.numeric(Scattered)) %>% 
+  select(ed, t918)
+
+cd9gen20 <- read.csv("cd9gen20.csv", header = F, stringsAsFactors = F)
+cd9gen20$ed <- paste(formatC(as.integer(cd9gen20$V2), width=3, flag="0"),
+                 as.integer(cd9gen20$V1), sep = "/")
+cd9gen20t <- cd9gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd9gen20t[is.na(cd9gen20t)] <- 0
+cd9diff <- cd9gen20t %>% 
+  mutate(t920 = as.numeric(`Constantine Jean-Pierre (Conservative)`) + 
+           as.numeric(`Constantine Jean-Pierre (Republican)`) + 
+           as.numeric(`Gary Popkin (Libertarian)`) + 
+           as.numeric(`Joel B. Anabilah-Azumah (SAM)`) + 
+           as.numeric(`Yvette D. Clarke (Democratic)`) + 
+           as.numeric(`Yvette D. Clarke (Working Families)`) + as.numeric(Scattered)) %>% 
+  select(ed, t920) %>% 
+  right_join(cd9gen18t, by = "ed") %>% 
+  mutate(diff = t920-t918) %>% 
+  select(ed, diff)
+```
+
+
+CD 10 2018 & 2020
+```{r}
+cd10gen18 <- read.csv("cd10gen18.csv", header = F, stringsAsFactors = F)
+cd10gen18$ed <- paste(formatC(as.integer(cd10gen18$V2), width=3, flag="0"),
+                 as.integer(cd10gen18$V1), sep = "/")
+cd10gen18t <- cd10gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd10gen18t[is.na(cd10gen18t)] <- 0
+cd10gen18t <- cd10gen18t %>% 
+  mutate(t1018 = as.numeric(`Jerrold L. Nadler (Democratic)`) + 
+           as.numeric(`Jerrold L. Nadler (Working Families)`) + 
+           as.numeric(`Naomi Levin (Conservative)`) + 
+           as.numeric(`Naomi Levin (Reform)`) + 
+           as.numeric(`Naomi Levin (Republican)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1018)
+
+cd10gen20 <- read.csv("cd10gen20.csv", header = F, stringsAsFactors = F)
+cd10gen20$ed <- paste(formatC(as.integer(cd10gen20$V2), width=3, flag="0"),
+                 as.integer(cd10gen20$V1), sep = "/")
+cd10gen20t <- cd10gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd10gen20t[is.na(cd10gen20t)] <- 0
+cd10diff <- cd10gen20t %>% 
+  mutate(t1020 = as.numeric(`Cathy A. Bernstein (Conservative)`) + 
+           as.numeric(`Cathy A. Bernstein (Republican)`) + 
+           as.numeric(`Jerrold L. Nadler (Democratic)`) + 
+           as.numeric(`Jerrold L. Nadler (Working Families)`) + 
+           as.numeric(`Michael Madrid (Libertarian)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1020) %>% 
+  right_join(cd10gen18t, by = "ed") %>% 
+  mutate(diff = t1020-t1018) %>% 
+  select(ed, diff)
+```
+
+
+cd 11
+```{r}
+cd11gen18 <- read.csv("cd11gen18.csv", header = F, stringsAsFactors = F)
+cd11gen18$ed <- paste(formatC(as.integer(cd11gen18$V2), width=3, flag="0"),
+                 as.integer(cd11gen18$V1), sep = "/")
+cd11gen18t <- cd11gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd11gen18t[is.na(cd11gen18t)] <- 0
+cd11gen18t <- cd11gen18t %>% 
+  mutate(t1118 = as.numeric(`Dan Donovan  (Reform)`) + 
+           as.numeric(`Dan Donovan (Conservative)`) + 
+           as.numeric(`Dan Donovan (Independence)`) + 
+           as.numeric(`Dan Donovan (Republican)`) + 
+           as.numeric(`Henry J. Bardel (Green)`) +            
+           as.numeric(`Max N. Rose (Working Families)`) + 
+           as.numeric(`Max N. Rose (Democratic)`) + 
+           as.numeric(`Max N. Rose (Women's Equality)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1118)
+
+cd11gen20 <- read.csv("cd11gen20.csv", header = F, stringsAsFactors = F)
+cd11gen20$ed <- paste(formatC(as.integer(cd11gen20$V2), width=3, flag="0"),
+                 as.integer(cd11gen20$V1), sep = "/")
+cd11gen20t <- cd11gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd11gen20t[is.na(cd11gen20t)] <- 0
+cd11diff <- cd11gen20t %>% 
+  mutate(t1120 = as.numeric(`Max N. Rose (Democratic)`) + 
+           as.numeric(`Max N. Rose (Independence)`) + 
+           as.numeric(`Nicole Malliotakis (Republican)`) + 
+           as.numeric(`Nicole Malliotakis (Conservative)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1120) %>% 
+  right_join(cd11gen18t, by = "ed") %>% 
+  mutate(diff = t1120-t1118) %>% 
+  select(ed, diff)
+```
+
+
+cd12
+```{r}
+cd12gen18 <- read.csv("cd12gen18.csv", header = F, stringsAsFactors = F)
+cd12gen18$ed <- paste(formatC(as.integer(cd12gen18$V2), width=3, flag="0"),
+                 as.integer(cd12gen18$V1), sep = "/")
+cd12gen18t <- cd12gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd12gen18t[is.na(cd12gen18t)] <- 0
+cd12gen18t <- cd12gen18t %>% 
+  mutate(t1218 = as.numeric(`Carolyn B. Maloney (Reform)`) + 
+           as.numeric(`Carolyn B. Maloney (Working Families)`) + 
+           as.numeric(`Carolyn B. Maloney (Democratic)`) + 
+           as.numeric(`Eliot Rabin (Republican)`) + 
+           as.numeric(`Scott Hutchins (Green)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1218)
+
+cd12gen20 <- read.csv("cd12gen20.csv", header = F, stringsAsFactors = F)
+cd12gen20$ed <- paste(formatC(as.integer(cd12gen20$V2), width=3, flag="0"),
+                 as.integer(cd12gen20$V1), sep = "/")
+cd12gen20t <- cd12gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd12gen20t[is.na(cd12gen20t)] <- 0
+cd12diff <- cd12gen20t %>% 
+  mutate(t1220 = as.numeric(`Carlos Santiago-Cano (Conservative)`) + 
+           as.numeric(`Carlos Santiago-Cano (Republican)`) + 
+           as.numeric(`Carolyn B. Maloney (Democratic)`) + 
+           as.numeric(`Steven Kolln (Libertarian)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1220) %>% 
+  right_join(cd12gen18t, by = "ed") %>% 
+  mutate(diff = t1220-t1218) %>% 
+  select(ed, diff)
+```
+
+
+cd13
+```{r}
+cd13gen18 <- read.csv("cd13gen18.csv", header = F, stringsAsFactors = F)
+cd13gen18$ed <- paste(formatC(as.integer(cd13gen18$V2), width=3, flag="0"),
+                 as.integer(cd13gen18$V1), sep = "/")
+cd13gen18t <- cd13gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd13gen18t[is.na(cd13gen18t)] <- 0
+cd13gen18t <- cd13gen18t %>% 
+  mutate(t1318 = as.numeric(`Adriano Espaillat (Democratic)`) + 
+           as.numeric(`Adriano Espaillat (Working Families)`) + 
+           as.numeric(`Jineea Butler (Reform)`) + 
+           as.numeric(`Jineea Butler (Republican)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1318)
+
+cd13gen20 <- read.csv("cd13gen20.csv", header = F, stringsAsFactors = F)
+cd13gen20$ed <- paste(formatC(as.integer(cd13gen20$V2), width=3, flag="0"),
+                 as.integer(cd13gen20$V1), sep = "/")
+cd13gen20t <- cd13gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd13gen20t[is.na(cd13gen20t)] <- 0
+cd13diff <- cd13gen20t %>% 
+  mutate(t1320 = as.numeric(`Adriano Espaillat (Democratic)`) + 
+           as.numeric(`Adriano Espaillat (Working Families)`) + 
+           as.numeric(`Christopher Morris-Perry (Conservative)`) + 
+           as.numeric(`Lovelynn Gwinn (Republican)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1320) %>% 
+  right_join(cd13gen18t, by = "ed") %>% 
+  mutate(diff = t1320-t1318) %>% 
+  select(ed, diff)
+```
+
+
+cd14
+```{r}
+cd14gen18 <- read.csv("cd14gen18.csv", header = F, stringsAsFactors = F)
+cd14gen18$ed <- paste(formatC(as.integer(cd14gen18$V2), width=3, flag="0"),
+                 as.integer(cd14gen18$V1), sep = "/")
+cd14gen18t <- cd14gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd14gen18t[is.na(cd14gen18t)] <- 0
+cd14gen18t <- cd14gen18t %>% 
+  mutate(t1418 = as.numeric(`Alexandria Ocasio-Cortez (Democratic)`) + 
+           as.numeric(`Anthony Pappas (Republican)`) + 
+           as.numeric(`Elizabeth Perri (Conservative)`) + 
+           as.numeric(`Joseph Crowley (Women's Equality)`) + 
+           as.numeric(`Joseph Crowley (Working Families)`) +
+           as.numeric(Scattered)) %>% 
+  select(ed, t1418)
+
+cd14gen20 <- read.csv("cd14gen20.csv", header = F, stringsAsFactors = F)
+cd14gen20$ed <- paste(formatC(as.integer(cd14gen20$V2), width=3, flag="0"),
+                 as.integer(cd14gen20$V1), sep = "/")
+cd14gen20t <- cd14gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd14gen20t[is.na(cd14gen20t)] <- 0
+cd14diff <- cd14gen20t %>% 
+  mutate(t1420 = as.numeric(`Alexandria Ocasio-Cortez (Democratic)`) + 
+           as.numeric(`John C. Cummings (Conservative)`) + 
+           as.numeric(`John C. Cummings (Republican)`) + 
+           as.numeric(`Michelle Caruso-Cabrera (SAM)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1420) %>% 
+  right_join(cd14gen18t, by = "ed") %>% 
+  mutate(diff = t1420-t1418) %>% 
+  select(ed, diff)
+```
+
+
+cd15
+```{r}
+cd15gen18 <- read.csv("cd15gen18.csv", header = F, stringsAsFactors = F)
+cd15gen18$ed <- paste(formatC(as.integer(cd15gen18$V2), width=3, flag="0"),
+                 as.integer(cd15gen18$V1), sep = "/")
+cd15gen18t <- cd15gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd15gen18t[is.na(cd15gen18t)] <- 0
+cd15gen18t <- cd15gen18t %>% 
+  mutate(t1518 = as.numeric(`Jason D. Gonzalez (Conservative)`) + 
+           as.numeric(`Jason D. Gonzalez (Republican)`) + 
+           as.numeric(`Jose E. Serrano (Democratic)`) + 
+           as.numeric(`Jose E. Serrano (Working Families)`) +
+           as.numeric(Scattered)) %>% 
+  select(ed, t1518)
+
+cd15gen20 <- read.csv("cd15gen20.csv", header = F, stringsAsFactors = F)
+cd15gen20$ed <- paste(formatC(as.integer(cd15gen20$V2), width=3, flag="0"),
+                 as.integer(cd15gen20$V1), sep = "/")
+cd15gen20t <- cd15gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd15gen20t[is.na(cd15gen20t)] <- 0
+cd15diff <- cd15gen20t %>% 
+  mutate(t1520 = as.numeric(`Patrick Delices (Conservative)`) + 
+           as.numeric(`Patrick Delices (Republican)`) + 
+           as.numeric(`Ritchie Torres (Democratic)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1520) %>% 
+  right_join(cd15gen18t, by = "ed") %>% 
+  mutate(diff = t1520-t1518) %>% 
+  select(ed, diff)
+```
+
+
+cd16
+```{r}
+cd16gen18 <- read.csv("cd16gen18.csv", header = F, stringsAsFactors = F)
+cd16gen18$ed <- paste(formatC(as.integer(cd16gen18$V2), width=3, flag="0"),
+                 as.integer(cd16gen18$V1), sep = "/")
+cd16gen18t <- cd16gen18 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd16gen18t[is.na(cd16gen18t)] <- 0
+cd16gen18t <- cd16gen18t %>% 
+  mutate(t1618 = as.numeric(`Eliot L. Engel (Working Families)`) + 
+           as.numeric(`Eliot L. Engel (Democratic)`) + 
+           as.numeric(`Eliot L. Engel (Women's Equality)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1618)
+
+cd16gen20 <- read.csv("cd16gen20.csv", header = F, stringsAsFactors = F)
+cd16gen20$ed <- paste(formatC(as.integer(cd16gen20$V2), width=3, flag="0"),
+                 as.integer(cd16gen20$V1), sep = "/")
+cd16gen20t <- cd16gen20 %>% 
+  select(-V1, -V2) %>% 
+  spread(V3, V4)
+cd16gen20t[is.na(cd16gen20t)] <- 0
+cd16diff <- cd16gen20t %>% 
+  mutate(t1620 = as.numeric(`Jamaal Bowman (Democratic)`) + 
+           as.numeric(`Patrick McManus (Conservative)`) + 
+           as.numeric(Scattered)) %>% 
+  select(ed, t1620) %>% 
+  right_join(cd16gen18t, by = "ed") %>% 
+  mutate(diff = t1620-t1618) %>% 
+  select(ed, diff)
 ```
 
 
@@ -91,16 +509,23 @@ write.csv(cd14p20d18, "cd14p20d18.csv")
 
 
 
+combine
+```{r}
+all1820 <- bind_rows(cd5diff, cd6diff, cd7diff, cd8diff, cd9diff, cd10diff, cd11diff, cd12diff, cd13diff, cd14diff, cd15diff, cd16diff) %>% 
+  right_join(edto, by = "ed")
+
+all1820$pct <- all1820$diff/all1820$Total.Reg
+write.csv(all1820, "all1820.csv")
+```
 
 
+Avi ccd29
+```{r}
+ccd29 <- read.delim("ccd29.txt", header = T)
+ccd29$ed <- paste(formatC(as.integer(sub("/.*", "", ccd29$ed)), width=3, flag="0"),
+                str_sub(ccd29$ed, -2,-1), sep = "/")
 
-
-
-
-
-
-
-
-
-
+ccd29pct <- left_join(ccd29, all1820, by = "ed")
+write.csv(ccd29pct, "ccd29pct.csv")
+```
 

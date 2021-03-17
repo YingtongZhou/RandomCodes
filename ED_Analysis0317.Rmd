@@ -1,0 +1,80 @@
+---
+title: "ED_Analysis0317"
+author: "YingtongZhou"
+date: "3/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load Library
+```{r}
+library(readxl)
+library(dplyr)
+library(stringr)
+library(tidyverse)
+```
+
+
+Load Bronx Reg
+```{r}
+BronxReg <- read_excel("BronxReg.xlsx")
+BronxReg$ed <- paste(str_sub(BronxReg$`ELECTION DIST`, -3,-1), str_sub(BronxReg$`ELECTION DIST`, -5,-4), sep = "/")
+BronxReg <- BronxReg %>% 
+  select(-`ELECTION DIST`)
+```
+
+
+Load Kings Reg
+```{r}
+KingsReg <- read_excel("KingsReg.xlsx")
+KingsReg$ed <- paste(str_sub(KingsReg$`ELECTION DIST`, -3,-1), str_sub(KingsReg$`ELECTION DIST`, -5,-4), sep = "/")
+KingsReg <- KingsReg %>% 
+  select(-`ELECTION DIST`)
+```
+
+
+Load NY Reg
+```{r}
+NewYorkReg <- read_excel("NewYorkReg.xlsx")
+NewYorkReg$ed <- paste(str_sub(NewYorkReg$`ELECTION DIST`, -3,-1), str_sub(NewYorkReg$`ELECTION DIST`, -5,-4), sep = "/")
+NewYorkReg <- NewYorkReg %>% 
+  select(-`ELECTION DIST`)
+```
+
+
+Load Queens Reg
+```{r}
+QueensReg <- read_excel("QueensReg.xlsx")
+QueensReg$ed <- paste(str_sub(QueensReg$`ELECTION DIST`, -3,-1), str_sub(QueensReg$`ELECTION DIST`, -5,-4), sep = "/")
+QueensReg <- QueensReg %>% 
+  select(-`ELECTION DIST`)
+```
+
+
+Load Richmond Reg
+```{r}
+RichmondReg <- read_excel("RichmondReg.xlsx")
+RichmondReg$ed <- paste(str_sub(RichmondReg$`ELECTION DIST`, -3,-1), str_sub(RichmondReg$`ELECTION DIST`, -5,-4), sep = "/")
+RichmondReg <- RichmondReg %>% 
+  select(-`ELECTION DIST`)
+```
+
+
+NYC Reg
+```{r}
+nyced <- read.delim("nyc_ed.txt", header = T)
+nyced <- nyced %>% 
+  select(ed)
+nyced$ed <- paste(formatC(as.integer(sub("/.*", "", nyced$ed)), width=3, flag="0"),
+                 str_sub(nyced$ed, -2,-1), sep = "/")
+
+NYCReg <- bind_rows(BronxReg, KingsReg, NewYorkReg, QueensReg, RichmondReg) %>% 
+  right_join(nyced, by = "ed")
+
+write.csv(NYCReg, "NYC_Registration.csv")
+```
+
